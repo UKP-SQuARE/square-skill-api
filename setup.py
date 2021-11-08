@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="square_skill_api",
@@ -7,7 +7,7 @@ setup(
     url="www.informatik.tu-darmstadt.de/ukp",
     author="UKP",
     author_email="baumgaertner@ukp.informatik.tu-darmstadt.de",
-    packages=["square_skill_api"],
+    packages=find_packages(),
     install_requires=[
         "uvicorn>=0.15.0",
         "fastapi>=0.65.2",                     
