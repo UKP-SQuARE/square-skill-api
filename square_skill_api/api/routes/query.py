@@ -8,8 +8,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-def predict(*args, **kwargs):
-    raise NotImplementedError("Predict function needs to be overwritten.")
+def predict():
+    def predict_fn():
+        raise NotImplementedError("Predict function needs to be overwritten.")
+    return predict_fn
 
 @router.post("/query", response_model=QueryOutput, name="Skill Query")
 async def query(query: QueryRequest, predict_fn=Depends(predict)) -> QueryOutput:
