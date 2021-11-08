@@ -24,6 +24,6 @@ def get_app(predict_fn: Callable, app_name: str = "square-skill-api", api_prefix
     fast_app.add_event_handler("startup", start_app_handler(fast_app))
     fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
     
-    fast_app.dependency_overrides[square_skill_api.api.routes.query.predict] = predict_fn
+    fast_app.dependency_overrides[square_skill_api.api.routes.query.predict] = lambda : predict_fn
     
     return fast_app
