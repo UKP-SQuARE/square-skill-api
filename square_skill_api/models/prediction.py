@@ -27,10 +27,6 @@ class Prediction(BaseModel):
     """
     A single prediction for a query.
     """
-    prediction_id: str = Field(
-        ...,
-        description="An identifier for each prediction. This allows to refer to the prediction in other requests."
-    )
     prediction_score: float = Field(
         ...,
         description="The overall score assigned to the prediction. Up to the Skill to decide how to calculate"
