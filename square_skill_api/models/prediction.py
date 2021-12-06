@@ -1,5 +1,5 @@
 from typing import Dict, Union, Tuple, List, Optional, Iterable
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, validator
 
 
 class PredictionOutput(BaseModel):
@@ -50,4 +50,13 @@ class QueryOutput(BaseModel):
         ...,
         description="All predictions for the query. Predictions are sorted by prediction_score (descending)"
     )
+        
+    @validator("predictions")
+    def sort_predictions(cls, v):
+        if isinstance(v[0], dict):
+            return sorted(v, key=lambda p: p["prediction_score"], reverse=True)
+        elif isinstance(v[0], Prediction):
+            return sorted(v, key=lambda p: p.prediction_score, reverse=True)
+        else:
+            raise ValueError()
 
