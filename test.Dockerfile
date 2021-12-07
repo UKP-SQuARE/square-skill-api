@@ -7,10 +7,10 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-COPY ./square_skill_api square_skill_api
-
 COPY requirements.dev.txt requirements.dev.txt 
 RUN pip install -r requirements.dev.txt
+
+COPY square_skill_api square_skill_api
 
 COPY tests tests
 
