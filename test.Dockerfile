@@ -14,4 +14,4 @@ RUN pip install -r requirements.dev.txt
 
 COPY tests tests
 
-CMD ["python", "-m", "pytest", "--junitxml=test-reports/junit.xml", "--cov", "--cov-report=xml:test-reports/coverage.xml", "--cov-report=html:test-reports/coverage.html"]
+RUN python -m pytest --junitxml=test-reports/junit.xml --cov --cov-report=xml:test-reports/coverage.xml --cov-report=html:test-reports/coverage.html]
