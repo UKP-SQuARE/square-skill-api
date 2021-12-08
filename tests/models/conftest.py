@@ -58,14 +58,17 @@ def prediction_factory():
 @fixture
 def model_api_sequence_classification_ouput_factory():
     def model_api_sequence_classification_ouput(n: int):
+        logits = [random.random() for _ in range(n)]
+        max_logit = max(logits)
+        argmax = logits.index(max_logit)
         return {
-            "labels": list(range(n)),
+            "labels": [argmax],
             "id2label": {i: str(i) for i in range(n)},
             "model_outputs": {
-                "logits": [random.random() for _ in range(n)],
+                "logits": [logits],
             },
+            "model_output_is_encoded": False,
         }
-
     return model_api_sequence_classification_ouput
 
 
@@ -73,7 +76,7 @@ def model_api_sequence_classification_ouput_factory():
 def model_api_question_answering_ouput_factory():
     def model_api_question_answering_ouput(n: int):
         return {
-            "answers": [
+            "answers": [[
                 {
                     "score": i / sum(range(n)),
                     "start": 0,
@@ -81,11 +84,11 @@ def model_api_question_answering_ouput_factory():
                     "answer": "answer {i}".format(i=str(i)),
                 }
                 for i in range(n)
-            ],
+            ]],
             "model_outputs": {
-                "start_logits": [random.random() for _ in range(n*10)],
-                "end_logits": [random.random() for _ in range(n*10)],
+                "start_logits": [[random.random() for _ in range(n*10)]],
+                "end_logits": [[random.random() for _ in range(n*10)]],
             },
+            "model_output_is_encoded": False,
         }
-
     return model_api_question_answering_ouput

@@ -101,7 +101,7 @@ class QueryOutput(BaseModel):
         )
 
         predictions = []
-        predictions_scores = model_api_output["model_outputs"]["logits"]
+        predictions_scores = model_api_output["model_outputs"]["logits"][0]
         for prediction_score, answer, prediction_documents in zip(
             predictions_scores, answers, prediction_documents_iter
         ):
@@ -128,7 +128,7 @@ class QueryOutput(BaseModel):
         """Constructor for QueryOutput from question answering of model api."""
         # TODO: make this work with the datastore api output to support all
         # prediction_document fields
-        qa_outputs = model_api_output["answers"]
+        qa_outputs = model_api_output["answers"][0]
 
         prediction_documents_iter = cls._prediction_documents_iter_from_context(
             iter_len=len(qa_outputs), context=context

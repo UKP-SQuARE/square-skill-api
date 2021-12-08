@@ -79,7 +79,7 @@ def test_query_output_from_question_answering(
         ), query_output
     elif isinstance(context, list):
         # span=[0, 0] is hardcoded in the model_api_question_answering_ouput_factory
-        scores = [qa["score"] for qa in model_api_output["answers"]]
+        scores = [qa["score"] for qa in model_api_output["answers"][0]]
         sorted_contexts = [c for _, c in sorted(zip(scores, context), reverse=True)]
         assert all(
             p.prediction_documents
