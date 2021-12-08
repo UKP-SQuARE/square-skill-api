@@ -14,7 +14,8 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        # python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.6]
 
     steps:
       - uses: actions/checkout@v2
@@ -45,11 +46,10 @@ jobs:
             ${{ runner.os }}-pip-
     
       - name: pip install
-        if: steps.pip-cache.outputs.cache-hit != 'true'
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements.dev.txt
+          pip install -r requirements.txt .
+          pip install -r requirements.dev.txt .
     
       - name: Run Tests
         run: |
