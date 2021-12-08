@@ -1,3 +1,4 @@
+import random
 from typing import List
 from pytest import fixture
 
@@ -52,3 +53,39 @@ def prediction_factory():
         )
 
     return generate_prediction
+
+
+@fixture
+def model_api_sequence_classification_ouput_factory():
+    def model_api_sequence_classification_ouput(n: int):
+        return {
+            "labels": list(range(n)),
+            "id2label": {i: str(i) for i in range(n)},
+            "model_outputs": {
+                "logits": [random.random() for _ in range(n)],
+            },
+        }
+
+    return model_api_sequence_classification_ouput
+
+
+@fixture
+def model_api_question_answering_ouput_factory():
+    def model_api_question_answering_ouput(n: int):
+        return {
+            "answers": [
+                {
+                    "score": i / sum(range(n)),
+                    "start": 0,
+                    "end": 0,
+                    "answer": "answer {i}".format(i=str(i)),
+                }
+                for i in range(n)
+            ],
+            "model_outputs": {
+                "start_logits": [random.random() for _ in range(n*10)],
+                "end_logits": [random.random() for _ in range(n*10)],
+            },
+        }
+
+    return model_api_question_answering_ouput
