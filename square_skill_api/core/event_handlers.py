@@ -6,6 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def _startup_model(app: FastAPI) -> None:
     pass
 

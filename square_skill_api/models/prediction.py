@@ -78,9 +78,9 @@ class QueryOutput(BaseModel):
             # different context for all answers
             if len(context) != iter_len:
                 raise ValueError()
-            prediction_documents_iter = (
-                [[PredictionDocument(document=c)] for c in context]
-            )
+            prediction_documents_iter = [
+                [PredictionDocument(document=c)] for c in context
+            ]
         else:
             raise TypeError(type(context))
 
@@ -148,7 +148,8 @@ class QueryOutput(BaseModel):
             )
             if prediction_documents:
 
-                for p in prediction_documents: p.span = [qa["start"], qa["end"]]
+                for p in prediction_documents:
+                    p.span = [qa["start"], qa["end"]]
 
             prediction = Prediction(
                 prediction_score=prediction_score,
