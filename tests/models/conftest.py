@@ -69,6 +69,7 @@ def model_api_sequence_classification_ouput_factory():
             },
             "model_output_is_encoded": False,
         }
+
     return model_api_sequence_classification_ouput
 
 
@@ -86,9 +87,10 @@ def model_api_question_answering_ouput_factory():
                 for i in range(n)
             ]],
             "model_outputs": {
-                "start_logits": [[random.random() for _ in range(n*10)]],
-                "end_logits": [[random.random() for _ in range(n*10)]],
+                "start_logits": [[random.random() for _ in range(n * 10)]],
+                "end_logits": [[random.random() for _ in range(n * 10)]],
             },
             "model_output_is_encoded": False,
         }
+
     return model_api_question_answering_ouput
