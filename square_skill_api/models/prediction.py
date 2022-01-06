@@ -161,11 +161,11 @@ class QueryOutput(BaseModel):
         # No answer found
         if not len(predictions):
             prediction_documents_iter = cls._prediction_documents_iter_from_context(
-                context
+                1, context
             )
             prediction_documents = next(prediction_documents_iter)
             prediction_documents[0].span = [0, 0]
-            max_score = max(qa[0]["score"] for qa in qa_outputs["answers"])
+            max_score = max(qa["score"] for qa in qa_outputs)
             prediction = Prediction(
                 prediction_score=max_score,
                 prediction_output=PredictionOutput(

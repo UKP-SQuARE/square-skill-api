@@ -86,3 +86,12 @@ def test_query_output_from_question_answering(
             == [PredictionDocument(document=sorted_contexts[i], span=[0, 0])]
             for i, p in enumerate(query_output.predictions)
         ), (query_output, sorted_contexts)
+
+def test_query_output_from_question_answering_no_answer_found(
+    model_api_question_answering_ouput_factory
+):
+    context = "No answer here."
+    model_api_output = model_api_question_answering_ouput_factory(n=3, answer="")
+    query_output = QueryOutput.from_question_answering(
+        model_api_output=model_api_output, context=context
+    )
