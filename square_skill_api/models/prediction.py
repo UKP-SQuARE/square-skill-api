@@ -1,4 +1,4 @@
-from typing import Dict, Union, Tuple, List, Optional, Iterable
+from typing import Dict, Union, List, Optional, Iterable
 from pydantic import Field, BaseModel, validator
 
 
@@ -22,6 +22,9 @@ class PredictionDocument(BaseModel):
     )
     url: str = Field("", description="URL source of the document (if available)")
     source: str = Field("", description="The source of the document (if available)")
+    document_score: float = Field(
+        0, description="The score assigned to the document by retrieval"
+    )
 
 
 class Prediction(BaseModel):
@@ -134,55 +137,49 @@ class QueryOutput(BaseModel):
         cls,
         model_api_output: Dict,
         context: Union[None, str, List[str]] = None,
+        context_score: Union[None, float, List[float]] = None,
     ):
         """Constructor for QueryOutput from question answering of model api."""
         # TODO: make this work with the datastore api output to support all
         # prediction_document fields
-        qa_outputs = model_api_output["answers"][0]
-
-        prediction_documents_iter = cls._prediction_documents_iter_from_context(
-            iter_len=len(qa_outputs), context=context
-        )
-
         predictions: List[Prediction] = []
-        for qa, prediction_documents in zip(qa_outputs, prediction_documents_iter):
+        for i, answers in enumerate(model_api_output["answers"]):
+            if isinstance(context, list):
+                assert isinstance(context_score, list)
+                context_doc_i = context[i]
+                context_score_i = context_score[i]
+            else:
+                context_doc_i = "" if context is None else context
+                context_score_i = 1 if context is None else context_score
 
-            answer = qa["answer"]
-            if not answer:
-                continue
+            for answer in answers:
+                answer_str = answer["answer"]
+                if not answer_str:
+                    answer_str = "No answer found."
+                answer_score = answer["score"]
+                prediction_score = answer_score
+                prediction_output = PredictionOutput(
+                    output=answer_str, output_score=answer_score
+                )
 
-            prediction_score = qa["score"]
-
-            prediction_output = PredictionOutput(
-                output=answer, output_score=prediction_score
-            )
-            if prediction_documents:
-
-                for p in prediction_documents:
-                    p.span = [qa["start"], qa["end"]]
-
-            prediction = Prediction(
-                prediction_score=prediction_score,
-                prediction_output=prediction_output,
-                prediction_documents=prediction_documents,
-            )
-            predictions.append(prediction)
-
-        # No answer found
-        if not len(predictions):
-            prediction_documents_iter = cls._prediction_documents_iter_from_context(
-                1, context
-            )
-            prediction_documents = next(prediction_documents_iter)
-            prediction_documents[0].span = [0, 0]
-            max_score = max(qa["score"] for qa in qa_outputs)
-            prediction = Prediction(
-                prediction_score=max_score,
-                prediction_output=PredictionOutput(
-                    output="No answer found.", output_score=max_score
-                ),
-                prediction_documents=prediction_documents,
-            )
-            predictions.append(prediction)
+                # NOTE: currently only one document per answer is supported
+                prediction_documents = (
+                    [
+                        PredictionDocument(
+                            document=context_doc_i,
+                            span=[answer["start"], answer["end"]],
+                            score=context_score_i,
+                        )
+                    ]
+                    if context_doc_i
+                    else []
+                )
+                predictions.append(
+                    Prediction(
+                        prediction_score=prediction_score,
+                        prediction_output=prediction_output,
+                        prediction_documents=prediction_documents,
+                    )
+                )
 
         return cls(predictions=predictions)
