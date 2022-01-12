@@ -22,9 +22,6 @@ class PredictionDocument(BaseModel):
     )
     url: str = Field("", description="URL source of the document (if available)")
     source: str = Field("", description="The source of the document (if available)")
-    document_score: float = Field(
-        0, description="The score assigned to the document by retrieval"
-    )
 
 
 class Prediction(BaseModel):
@@ -55,15 +52,25 @@ class QueryOutput(BaseModel):
         ...,
         description="All predictions for the query. Predictions are sorted by prediction_score (descending)",
     )
+    @staticmethod
+    def sort_predictions_key(p):
+        document_score = 1
+        if isinstance(p, Prediction):
+            answer_score = p.prediction_score
+            if p.prediction_documents:
+                document_score = getattr(p.prediction_documents[0], "document_score", 1)
+        elif isinstance(p, dict):
+            answer_score = p["prediction_score"]
+            if p["prediction_documents"]:
+                document_score = p["prediction_documents"][0].get("document_score", 1)
+        else:
+            raise TypeError(type(p))
+        return (document_score, answer_score)
+
 
     @validator("predictions")
     def sort_predictions(cls, v):
-        if isinstance(v[0], dict):
-            return sorted(v, key=lambda p: p["prediction_score"], reverse=True)
-        elif isinstance(v[0], Prediction):
-            return sorted(v, key=lambda p: p.prediction_score, reverse=True)
-        else:
-            raise ValueError()
+        return sorted(v, key=cls.sort_predictions_key, reverse=True)
 
     @staticmethod
     def _prediction_documents_iter_from_context(
