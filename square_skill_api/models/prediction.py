@@ -22,6 +22,9 @@ class PredictionDocument(BaseModel):
     )
     url: str = Field("", description="URL source of the document (if available)")
     source: str = Field("", description="The source of the document (if available)")
+    document_score: float = Field(
+        0, description="The score assigned to the document by retrieval"
+    )
 
 
 class Prediction(BaseModel):
