@@ -5,24 +5,30 @@ import pytest
 from square_skill_api.models.prediction import PredictionDocument, QueryOutput
 
 
-@pytest.mark.parametrize("scores", list(itertools.permutations([1, 2, 3])))
-def test_query_output_autosort(scores, prediction_factory, prediction_output_factory):
-    max_score = max(scores)
+@pytest.mark.parametrize(
+    "answer_scores,document_scores",
+    (([0.9, 0.8, 0.7], [0.3, 0.4]), ([0.7, 0.8, 0.9], [0.4, 0.3]), ([0.7, 0.9, 0.8], [None, None, None])),
+)
+def test_query_output_autosort(answer_scores, document_scores, predictions_factory):
 
-    predictions = [
-        prediction_factory(
-            prediction_score=score,
-            prediction_output=prediction_output_factory(output_score=score),
-        )
-        for score in scores
-    ]
+    predictions = predictions_factory(
+        answer_scores=answer_scores, document_scores=document_scores
+    )
 
     query_output = QueryOutput(predictions=predictions)
-    assert query_output.predictions[0].prediction_score == max_score
-    assert all(
-        query_output.predictions[i].prediction_score == score
-        for i, score in enumerate(sorted(scores, reverse=True))
+    assert query_output.predictions[0].prediction_output.output_score == max(
+        answer_scores
     )
+    assert query_output.predictions[-1].prediction_output.output_score == min(
+        answer_scores
+    )
+    if all(s is not None for s in document_scores):
+        assert query_output.predictions[0].prediction_documents[0].document_score == max(
+            document_scores
+        )
+        assert query_output.predictions[-1].prediction_documents[0].document_score == min(
+            document_scores
+        )
 
 
 @pytest.mark.parametrize(
@@ -57,16 +63,22 @@ def test_query_output_from_sequence_classification(
 
 
 @pytest.mark.parametrize(
-    "context,n",
-    [(None, 3), ("document", 3), (["documentA", "documentB"], 2)],
+    "context,context_score,n",
+    [
+        (None, None, 5),
+        ("document", 0.9, 5),
+        (["documentA", "documentB"], [0.7, 0.3], 5),
+    ],
     ids=["context=None", "context=str", "context=List[str]"],
 )
 def test_query_output_from_question_answering(
-    context, n, model_api_question_answering_ouput_factory
+    context, context_score, n, model_api_question_answering_ouput_factory
 ):
-    model_api_output = model_api_question_answering_ouput_factory(n=n)
+    model_api_output = model_api_question_answering_ouput_factory(
+        n_docs=len(context) if isinstance(context, list) else 1, n_answers=n
+    )
     query_output = QueryOutput.from_question_answering(
-        model_api_output=model_api_output, context=context
+        model_api_output=model_api_output, context=context, context_score=context_score
     )
     if context is None:
         assert all(p.prediction_documents == [] for p in query_output.predictions)
@@ -78,20 +90,5 @@ def test_query_output_from_question_answering(
             for p in query_output.predictions
         ), query_output
     elif isinstance(context, list):
-        # span=[0, 0] is hardcoded in the model_api_question_answering_ouput_factory
-        scores = [qa["score"] for qa in model_api_output["answers"][0]]
-        sorted_contexts = [c for _, c in sorted(zip(scores, context), reverse=True)]
-        assert all(
-            p.prediction_documents
-            == [PredictionDocument(document=sorted_contexts[i], span=[0, 0])]
-            for i, p in enumerate(query_output.predictions)
-        ), (query_output, sorted_contexts)
-
-def test_query_output_from_question_answering_no_answer_found(
-    model_api_question_answering_ouput_factory
-):
-    context = "No answer here."
-    model_api_output = model_api_question_answering_ouput_factory(n=3, answer="")
-    query_output = QueryOutput.from_question_answering(
-        model_api_output=model_api_output, context=context
-    )
+       query_output.predictions[0].prediction_documents[0].document_score == max(context_score)
+       query_output.predictions[-1].prediction_documents[0].document_score == min(context_score)
