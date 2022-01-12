@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="square_skill_api",
-    version="0.0.5",    
+    version="0.0.5",
     description="",
     url="www.informatik.tu-darmstadt.de/ukp",
     author="UKP",
@@ -10,7 +10,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "uvicorn>=0.15.0",
-        "fastapi>=0.65.2",                     
-        "pydantic>=1.8.2",                     
+        "fastapi>=0.65.2",
+        "pydantic>=1.8.2",
     ],
 )

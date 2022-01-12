@@ -4,8 +4,11 @@ from typing import List
 import numpy as np
 from pytest import fixture
 from square_skill_api.models import prediction
-from square_skill_api.models.prediction import (Prediction, PredictionDocument,
-                                                PredictionOutput)
+from square_skill_api.models.prediction import (
+    Prediction,
+    PredictionDocument,
+    PredictionOutput,
+)
 
 
 @fixture

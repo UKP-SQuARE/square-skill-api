@@ -55,6 +55,7 @@ class QueryOutput(BaseModel):
         ...,
         description="All predictions for the query. Predictions are sorted by prediction_score (descending)",
     )
+
     @staticmethod
     def sort_predictions_key(p):
         document_score = 1
@@ -69,7 +70,6 @@ class QueryOutput(BaseModel):
         else:
             raise TypeError(type(p))
         return (document_score, answer_score)
-
 
     @validator("predictions")
     def sort_predictions(cls, v):

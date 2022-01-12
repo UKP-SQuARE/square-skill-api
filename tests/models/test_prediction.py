@@ -7,7 +7,11 @@ from square_skill_api.models.prediction import PredictionDocument, QueryOutput
 
 @pytest.mark.parametrize(
     "answer_scores,document_scores",
-    (([0.9, 0.8, 0.7], [0.3, 0.4]), ([0.7, 0.8, 0.9], [0.4, 0.3]), ([0.7, 0.9, 0.8], [None, None, None])),
+    (
+        ([0.9, 0.8, 0.7], [0.3, 0.4]),
+        ([0.7, 0.8, 0.9], [0.4, 0.3]),
+        ([0.7, 0.9, 0.8], [None, None, None]),
+    ),
 )
 def test_query_output_autosort(answer_scores, document_scores, predictions_factory):
 
@@ -23,12 +27,12 @@ def test_query_output_autosort(answer_scores, document_scores, predictions_facto
         answer_scores
     )
     if all(s is not None for s in document_scores):
-        assert query_output.predictions[0].prediction_documents[0].document_score == max(
-            document_scores
-        )
-        assert query_output.predictions[-1].prediction_documents[0].document_score == min(
-            document_scores
-        )
+        assert query_output.predictions[0].prediction_documents[
+            0
+        ].document_score == max(document_scores)
+        assert query_output.predictions[-1].prediction_documents[
+            0
+        ].document_score == min(document_scores)
 
 
 @pytest.mark.parametrize(
@@ -90,5 +94,9 @@ def test_query_output_from_question_answering(
             for p in query_output.predictions
         ), query_output
     elif isinstance(context, list):
-       query_output.predictions[0].prediction_documents[0].document_score == max(context_score)
-       query_output.predictions[-1].prediction_documents[0].document_score == min(context_score)
+        query_output.predictions[0].prediction_documents[0].document_score == max(
+            context_score
+        )
+        query_output.predictions[-1].prediction_documents[0].document_score == min(
+            context_score
+        )
