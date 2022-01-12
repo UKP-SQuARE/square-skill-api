@@ -1,58 +1,40 @@
 import random
 from typing import List
+
+import numpy as np
 from pytest import fixture
-
-from square_skill_api.models.prediction import (
-    Prediction,
-    PredictionDocument,
-    PredictionOutput,
-)
+from square_skill_api.models import prediction
+from square_skill_api.models.prediction import (Prediction, PredictionDocument,
+                                                PredictionOutput)
 
 
 @fixture
-def prediction_document_factory():
-    def generate_prediction_document(
-        index="",
-        document_id="",
-        document="lorem ipsum",
-        span: List = [],
-        url="",
-        source="",
-    ):
-        return PredictionDocument(
-            index=index,
-            document_id=document_id,
-            document=document,
-            span=span,
-            url=url,
-            source=source,
-        )
+def predictions_factory():
+    def generate_predictions(answer_scores: List[float], document_scores: List[float]):
+        predictions = []
+        for document_i, document_score in enumerate(document_scores):
+            for answer_i, answer_score in enumerate(answer_scores):
+                predictions.append(
+                    Prediction(
+                        prediction_score=answer_score,
+                        prediction_output=PredictionOutput(
+                            output=f"answer {answer_i}", output_score=answer_score
+                        ),
+                        prediction_documents=[
+                            PredictionDocument(
+                                document="document {document_i}",
+                                document_score=document_score,
+                            )
+                            if document_score is not None
+                            else PredictionDocument(
+                                document="document {document_i}",
+                            )
+                        ],
+                    )
+                )
+        return predictions
 
-    return generate_prediction_document
-
-
-@fixture
-def prediction_output_factory():
-    def generate_prediction_output(output="", output_score=0):
-        return PredictionOutput(output=output, output_score=output_score)
-
-    return generate_prediction_output
-
-
-@fixture
-def prediction_factory():
-    def generate_prediction(
-        prediction_score,
-        prediction_output: PredictionOutput,
-        prediction_documents: List[PredictionDocument] = [],
-    ):
-        return Prediction(
-            prediction_score=prediction_score,
-            prediction_output=prediction_output,
-            prediction_documents=prediction_documents,
-        )
-
-    return generate_prediction
+    return generate_predictions
 
 
 @fixture
@@ -75,26 +57,31 @@ def model_api_sequence_classification_ouput_factory():
 
 @fixture
 def model_api_question_answering_ouput_factory():
-    def model_api_question_answering_ouput(n: int, answer: str = None):
+    def model_api_question_answering_ouput(
+        n_docs: int, n_answers: int, answer: str = None
+    ):
         return {
             "answers": [
                 [
                     {
-                        "score": i / sum(range(n)),
+                        "score": answer_i / sum(range(n_answers)),
                         "start": 0,
                         "end": 0,
-                        "answer": "answer {i}".format(i=str(i))
+                        "answer": "answer {answer_i} for doc {doc_i}".format(
+                            answer_i=str(answer_i), doc_i=str(doc_i)
+                        )
                         if answer is None
                         else answer,
                     }
-                    for i in range(n)
+                    for answer_i in range(n_answers)
                 ]
+                for doc_i in range(n_docs)
             ],
             "model_outputs": {
-                "start_logits": [[random.random() for _ in range(n * 10)]],
-                "end_logits": [[random.random() for _ in range(n * 10)]],
+                "start_logits": "something encoded",
+                "end_logits": "something encoded",
             },
-            "model_output_is_encoded": False,
+            "model_output_is_encoded": True,
         }
 
     return model_api_question_answering_ouput
