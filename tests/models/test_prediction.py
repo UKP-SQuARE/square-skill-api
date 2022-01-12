@@ -71,9 +71,10 @@ def test_query_output_from_sequence_classification(
     [
         (None, None, 5),
         ("document", 0.9, 5),
+        ("document", None, 5),
         (["documentA", "documentB"], [0.7, 0.3], 5),
     ],
-    ids=["context=None", "context=str", "context=List[str]"],
+    ids=["context=None", "context=str", "context=str,score=None", "context=List[str]"],
 )
 def test_query_output_from_question_answering(
     context, context_score, n, model_api_question_answering_ouput_factory
