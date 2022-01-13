@@ -91,7 +91,13 @@ def test_query_output_from_question_answering(
         # span=[0, 0] is hardcoded in the model_api_question_answering_ouput_factory
         assert all(
             p.prediction_documents
-            == [PredictionDocument(document=context, span=[0, 0])]
+            == [
+                PredictionDocument(
+                    document=context,
+                    span=[0, 0],
+                    document_score=context_score if context_score is not None else 1,
+                )
+            ]
             for p in query_output.predictions
         ), query_output
     elif isinstance(context, list):
