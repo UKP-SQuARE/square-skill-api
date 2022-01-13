@@ -157,18 +157,18 @@ class QueryOutput(BaseModel):
                 if not answer_str:
                     answer_str = "No answer found."
                 answer_score = answer["score"]
+                
                 prediction_score = answer_score
                 prediction_output = PredictionOutput(
                     output=answer_str, output_score=answer_score
                 )
-
                 # NOTE: currently only one document per answer is supported
                 prediction_documents = (
                     [
                         PredictionDocument(
                             document=context_doc_i,
                             span=[answer["start"], answer["end"]],
-                            score=context_score_i,
+                            document_score=context_score_i,
                         )
                     ]
                     if context_doc_i
