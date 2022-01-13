@@ -150,7 +150,7 @@ class QueryOutput(BaseModel):
                 context_score_i = context_score[i]
             else:
                 context_doc_i = "" if context is None else context
-                context_score_i = 1 if context is None else context_score
+                context_score_i = 1 if context_score is None else context_score
 
             for answer in answers:
                 answer_str = answer["answer"]
