@@ -25,7 +25,7 @@ def predictions_factory():
                         ),
                         prediction_documents=[
                             PredictionDocument(
-                                document="document {document_i}",
+                                document=f"document {document_i}",
                                 document_score=document_score,
                             )
                             if document_score is not None
