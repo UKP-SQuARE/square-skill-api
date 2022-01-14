@@ -1,7 +1,7 @@
 from typing import Dict, Union, List, Optional, Iterable
 from pydantic import Field, BaseModel, validator
 
-
+NO_ANSWER_FOUND_STRING = "No answer found."
 class PredictionOutput(BaseModel):
     output: str = Field(
         ...,
@@ -60,16 +60,18 @@ class QueryOutput(BaseModel):
     def sort_predictions_key(p):
         document_score = 1
         if isinstance(p, Prediction):
+            answer_found = p.prediction_output.output not in ["", NO_ANSWER_FOUND_STRING]
             answer_score = p.prediction_score
             if p.prediction_documents:
                 document_score = getattr(p.prediction_documents[0], "document_score", 1)
         elif isinstance(p, dict):
+            answer_found = p["prediction_output"]["output"] not in ["", NO_ANSWER_FOUND_STRING]
             answer_score = p["prediction_score"]
             if p["prediction_documents"]:
                 document_score = p["prediction_documents"][0].get("document_score", 1)
         else:
             raise TypeError(type(p))
-        return (document_score, answer_score)
+        return (answer_found, document_score, answer_score)
 
     @validator("predictions")
     def sort_predictions(cls, v):
@@ -155,7 +157,7 @@ class QueryOutput(BaseModel):
             for answer in answers:
                 answer_str = answer["answer"]
                 if not answer_str:
-                    answer_str = "No answer found."
+                    answer_str = NO_ANSWER_FOUND_STRING
                 answer_score = answer["score"]
                 
                 prediction_score = answer_score
