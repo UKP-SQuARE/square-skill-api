@@ -2,7 +2,7 @@ import itertools
 
 import pytest
 
-from square_skill_api.models.prediction import PredictionDocument, QueryOutput
+from square_skill_api.models.prediction import PredictionDocument, QueryOutput, NO_ANSWER_FOUND_STRING
 
 
 @pytest.mark.parametrize(
@@ -67,21 +67,24 @@ def test_query_output_from_sequence_classification(
 
 
 @pytest.mark.parametrize(
-    "context,context_score,n",
+    "context,context_score,test_no_answer,n",
     [
-        (None, None, 5),
-        ("document", 0.9, 5),
-        ("document", None, 5),
-        (["documentA", "documentB"], [0.7, 0.3], 5),
+        (None, None, False, 5),
+        ("document", 0.9, False, 5),
+        ("document", None, False, 5),
+        (["documentA", "documentB"], [0.7, 0.3], False, 5),
+        (["documentA", "documentB"], [0.7, 0.9], True, 5),
     ],
-    ids=["context=None", "context=str", "context=str,score=None", "context=List[str]"],
+    ids=["context=None", "context=str", "context=str,score=None", "context=List[str]", "context=List[str],no-answer"],
 )
 def test_query_output_from_question_answering(
-    context, context_score, n, model_api_question_answering_ouput_factory
+    context, context_score, test_no_answer, n, model_api_question_answering_ouput_factory
 ):
     model_api_output = model_api_question_answering_ouput_factory(
         n_docs=len(context) if isinstance(context, list) else 1, n_answers=n
     )
+    if test_no_answer:
+        model_api_output["answers"][1][-1]["answer"] = NO_ANSWER_FOUND_STRING
     query_output = QueryOutput.from_question_answering(
         model_api_output=model_api_output, context=context, context_score=context_score
     )
@@ -101,9 +104,12 @@ def test_query_output_from_question_answering(
             for p in query_output.predictions
         ), query_output
     elif isinstance(context, list):
-        query_output.predictions[0].prediction_documents[0].document_score == max(
-            context_score
-        )
-        query_output.predictions[-1].prediction_documents[0].document_score == min(
-            context_score
-        )
+        if test_no_answer:
+            assert query_output.predictions[-1].prediction_output.output == NO_ANSWER_FOUND_STRING
+        else:
+            assert query_output.predictions[0].prediction_documents[0].document_score == max(
+                context_score
+            )
+            assert query_output.predictions[-1].prediction_documents[0].document_score == min(
+                context_score
+            )
