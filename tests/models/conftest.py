@@ -12,7 +12,11 @@ from square_skill_api.models.prediction import (
 
 @fixture
 def predictions_factory():
-    def generate_predictions(answer_scores: List[float], document_scores: List[float]):
+    def generate_predictions(
+        answer_scores: List[float],
+        document_scores: List[float],
+        answers: List[str] = None,
+    ):
         predictions = []
         for document_i, document_score in enumerate(document_scores):
             for answer_i, answer_score in enumerate(answer_scores):
@@ -20,7 +24,10 @@ def predictions_factory():
                     Prediction(
                         prediction_score=answer_score,
                         prediction_output=PredictionOutput(
-                            output=f"answer {answer_i}", output_score=answer_score
+                            output=answers[answer_i]
+                            if answers
+                            else f"answer {answer_i}",
+                            output_score=answer_score,
                         ),
                         prediction_documents=[
                             PredictionDocument(
