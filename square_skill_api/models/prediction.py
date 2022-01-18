@@ -71,7 +71,7 @@ class QueryOutput(BaseModel):
                 document_score = p["prediction_documents"][0].get("document_score", 1)
         else:
             raise TypeError(type(p))
-        return (answer_found, document_score, answer_score)
+        return (answer_found, answer_score, document_score)
 
     @validator("predictions")
     def sort_predictions(cls, v):
