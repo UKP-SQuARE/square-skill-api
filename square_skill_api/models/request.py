@@ -4,9 +4,7 @@ from pydantic import BaseModel, Field, PositiveInt
 
 
 class QueryRequest(BaseModel):
-    """
-    The model for a query request that the skill receives.
-    """
+    """The model for a query request that the skill receives."""
 
     query: str = Field(
         ..., description="The input to the model that is entered by the user"
