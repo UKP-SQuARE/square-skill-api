@@ -19,7 +19,7 @@ class PredictionDocument(BaseModel):
     )
     document_id: str = Field("", description="Id of the document in the index")
     document: str = Field(..., description="The text of the document")
-    span: Optional[List[int]] = Field(
+    span: Optional[List[int]] = Field(None,
         description="Start and end character index of the span used. (optional)"
     )
     url: str = Field("", description="URL source of the document (if available)")
