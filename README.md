@@ -4,7 +4,7 @@ This package is used for providing a unified API for all skills and facilitating
 ## Installation
 To install the latest stable version:
 ```bash
-pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.4
+pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.6
 ```
 To install from the master branch:
 ```bash
