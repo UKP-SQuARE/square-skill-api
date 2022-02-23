@@ -8,6 +8,7 @@ setup(
     author="UKP",
     author_email="baumgaertner@ukp.informatik.tu-darmstadt.de",
     packages=find_packages(exclude=("tests", ".gitignore", "pytest.ini", "requirements.dev.txt")),
+    dependency_links=['https://github.com/UKP-SQuARE/square-auth.git@v0.0.2#egg=square-auth'],
     install_requires=[
         "uvicorn>=0.15.0",
         "fastapi>=0.65.2",
