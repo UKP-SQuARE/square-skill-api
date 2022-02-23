@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from square_skill_api.api import auth
 from square_skill_api.models.request import QueryRequest
 from square_skill_api.models.prediction import QueryOutput
 import logging
@@ -22,6 +23,7 @@ def predict():
     "/query",
     response_model=QueryOutput,
     name="Skill Query",
+    dependencies=[Depends(auth)],
 )
 async def query(query: QueryRequest, predict_fn=Depends(predict)) -> QueryOutput:
     """Query a skill by providing an input (e.g. question and optional context) and 
