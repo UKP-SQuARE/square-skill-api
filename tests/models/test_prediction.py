@@ -2,7 +2,11 @@ import itertools
 
 import pytest
 
-from square_skill_api.models.prediction import PredictionDocument, QueryOutput, NO_ANSWER_FOUND_STRING
+from square_skill_api.models.prediction import (
+    PredictionDocument,
+    QueryOutput,
+    NO_ANSWER_FOUND_STRING,
+)
 
 
 @pytest.mark.parametrize(
@@ -75,10 +79,20 @@ def test_query_output_from_sequence_classification(
         (["documentA", "documentB"], [0.7, 0.3], False, 5),
         (["documentA", "documentB"], [0.7, 0.9], True, 5),
     ],
-    ids=["context=None", "context=str", "context=str,score=None", "context=List[str]", "context=List[str],no-answer"],
+    ids=[
+        "context=None",
+        "context=str",
+        "context=str,score=None",
+        "context=List[str]",
+        "context=List[str],no-answer",
+    ],
 )
 def test_query_output_from_question_answering(
-    context, context_score, test_no_answer, n, model_api_question_answering_ouput_factory
+    context,
+    context_score,
+    test_no_answer,
+    n,
+    model_api_question_answering_ouput_factory,
 ):
     model_api_output = model_api_question_answering_ouput_factory(
         n_docs=len(context) if isinstance(context, list) else 1, n_answers=n
@@ -105,11 +119,14 @@ def test_query_output_from_question_answering(
         ), query_output
     elif isinstance(context, list):
         if test_no_answer:
-            assert query_output.predictions[-1].prediction_output.output == NO_ANSWER_FOUND_STRING
+            assert (
+                query_output.predictions[-1].prediction_output.output
+                == NO_ANSWER_FOUND_STRING
+            )
         else:
-            assert query_output.predictions[0].prediction_documents[0].document_score == max(
-                context_score
-            )
-            assert query_output.predictions[-1].prediction_documents[0].document_score == min(
-                context_score
-            )
+            assert query_output.predictions[0].prediction_documents[
+                0
+            ].document_score == max(context_score)
+            assert query_output.predictions[-1].prediction_documents[
+                0
+            ].document_score == min(context_score)
