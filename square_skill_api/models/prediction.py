@@ -261,9 +261,9 @@ class QueryOutput(BaseModel):
                 output=ans, output_score=1
             )
             prediction = Prediction(
-                prediction_score=None,
+                prediction_score=1,
                 prediction_output=prediction_output,
-                prediction_documents=context,
+                prediction_documents=[context],
             )
 
             predictions.append(prediction)
