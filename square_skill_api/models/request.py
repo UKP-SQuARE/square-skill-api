@@ -12,7 +12,5 @@ class QueryRequest(BaseModel):
     skill_args: Dict[str, Any] = Field(
         {}, description="Optional values for specific parameters of the skill"
     )
-    num_results: PositiveInt = Field(
-        1, description="The (max.) number of results to return"
-    )
+    skill: Dict[str, Any] = Field({}, description="Skill information. See Skill-Manager for details.")
     user_id: str = Field("")
