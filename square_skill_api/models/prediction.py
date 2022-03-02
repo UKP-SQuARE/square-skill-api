@@ -250,10 +250,6 @@ class QueryOutput(BaseModel):
             model_api_output (Dict): Output returned from the model api.
         """
 
-        '''
-        
-        generated_texts': [[' 250,000 dollars \\n', ' 250,000 dollars \\n', ' 250,000 dollars \\n', ' 250,000 dollars \\n', ' 250,000 dollars \\n']]
-        '''
         predictions = []    
         for ans in model_api_output["generated_texts"][0]:
             # output_score is None for now
@@ -263,7 +259,7 @@ class QueryOutput(BaseModel):
             prediction = Prediction(
                 prediction_score=1,
                 prediction_output=prediction_output,
-                prediction_documents=[context],
+                prediction_documents=[PredictionDocument(document=context)],
             )
 
             predictions.append(prediction)
