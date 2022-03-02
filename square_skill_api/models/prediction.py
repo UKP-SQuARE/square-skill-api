@@ -144,7 +144,7 @@ class QueryOutput(BaseModel):
         model_api_output: Dict,
         context: Union[None, str, List[str]] = None,
     ):
-        """Constructor for QueryOutput from sequeunce classification of model api.
+        """Constructor for QueryOutput from sequence classification of model api.
 
         Args:
             answers (List[str]): List of answer strings
@@ -234,5 +234,38 @@ class QueryOutput(BaseModel):
                         prediction_documents=prediction_documents,
                     )
                 )
+
+        return cls(predictions=predictions)
+
+
+    @classmethod
+    def from_generation(
+        cls,
+        model_api_output: Dict,
+        context: Union[None, str, List[str]] = None,
+    ):
+        """Constructor for QueryOutput from generation of model api.
+
+        Args:
+            model_api_output (Dict): Output returned from the model api.
+        """
+
+        '''
+        
+        generated_texts': [[' 250,000 dollars \\n', ' 250,000 dollars \\n', ' 250,000 dollars \\n', ' 250,000 dollars \\n', ' 250,000 dollars \\n']]
+        '''
+        predictions = []    
+        for ans in model_api_output["generated_texts"][0]:
+            # output_score is None for now
+            prediction_output = PredictionOutput(
+                output=ans, output_score=None
+            )
+            prediction = Prediction(
+                prediction_score=None,
+                prediction_output=prediction_output,
+                prediction_documents=context,
+            )
+
+            predictions.append(prediction)
 
         return cls(predictions=predictions)
