@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="square_skill_api",
-    version="0.0.12",
+    version="0.0.14",
     description="",
     url="www.informatik.tu-darmstadt.de/ukp",
     author="UKP",
