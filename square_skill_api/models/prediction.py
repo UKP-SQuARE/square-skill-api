@@ -239,21 +239,26 @@ class QueryOutput(BaseModel):
 
 
     @classmethod
-    def from_text2text_generation(
+    def from_generation(
         cls,
         model_api_output: Dict,
         context: Union[None, str, List[str]] = None,
     ):
-        """Constructor for QueryOutput from text2text-generation of model api.
+        """Constructor for QueryOutput from generation of model api.
 
         Args:
             model_api_output (Dict): Output returned from the model api.
         """
-        predictions = []
-        for ans in model_api_output:
-            # output_score is None because generative models for QA do not return scores
+
+        '''
+        
+        generated_texts': [[' 250,000 dollars \\n', ' 250,000 dollars \\n', ' 250,000 dollars \\n', ' 250,000 dollars \\n', ' 250,000 dollars \\n']]
+        '''
+        predictions = []    
+        for ans in model_api_output["generated_texts"][0]:
+            # output_score is None for now
             prediction_output = PredictionOutput(
-                output=ans['generated_text'], output_score=None
+                output=ans, output_score=None
             )
             prediction = Prediction(
                 prediction_score=None,
