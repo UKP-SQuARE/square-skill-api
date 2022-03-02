@@ -258,7 +258,7 @@ class QueryOutput(BaseModel):
         for ans in model_api_output["generated_texts"][0]:
             # output_score is None for now
             prediction_output = PredictionOutput(
-                output=ans, output_score=None
+                output=ans, output_score=1
             )
             prediction = Prediction(
                 prediction_score=None,
