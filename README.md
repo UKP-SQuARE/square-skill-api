@@ -2,9 +2,9 @@
 This package is used for providing a unified API for all skills and facilitating skill developers. The package includes building an FastAPI application, but only the predict function of a skill needs to implemented.
 
 ## Installation
-To install the latest stable version:
+To install the latest stable version run:
 ```bash
-pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.6
+pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.12
 ```
 To install from the master branch:
 ```bash
@@ -35,12 +35,12 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 ```
-This builds an api with two endpoints `/health/heartbeat` and `/query`, that can be queried with curl, or via the UI at [http://localhost:8000/docs](http://localhost:8000/docs).
+This builds an api with two endpoints `/health/heartbeat` and `/query`, that can be queried with curl, or via the docs at [http://localhost:8000/docs](http://localhost:8000/docs).
 ```bash
 curl -X GET http://localhost:8000/health/heartbeat
 # {"is_alive":true}
 curl -X POST http://localhost:8000/query \
     -H 'Content-Type: application/json' \
-    -d '{ "query": "string", "skill_args": {}, "num_results": 1, "user_id": ""}'
+    -d '{ "query": "string"}'
 # {"predictions":[{"prediction_score":1.0,"prediction_output":{"output":"42","output_score":1.0},"prediction_documents":[]}]}
 ```
