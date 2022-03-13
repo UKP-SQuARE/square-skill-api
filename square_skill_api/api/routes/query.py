@@ -23,7 +23,6 @@ def predict():
     "/query",
     response_model=QueryOutput,
     name="Skill Query",
-    dependencies=[Depends(auth)],
 )
 async def query(query: QueryRequest, predict_fn=Depends(predict)) -> QueryOutput:
     """Query a skill by providing an input (e.g. question and optional context) and
