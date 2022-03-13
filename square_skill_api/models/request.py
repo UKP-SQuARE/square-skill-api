@@ -12,5 +12,7 @@ class QueryRequest(BaseModel):
     skill_args: Dict[str, Any] = Field(
         {}, description="Optional values for specific parameters of the skill"
     )
-    skill: Dict[str, Any] = Field({}, description="Skill information. See Skill-Manager for details.")
+    skill: Dict[str, Any] = Field(
+        {}, description="Skill information. See Skill-Manager for details."
+    )
     user_id: str = Field("")

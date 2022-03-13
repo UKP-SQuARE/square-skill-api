@@ -7,7 +7,9 @@ setup(
     url="www.informatik.tu-darmstadt.de/ukp",
     author="UKP",
     author_email="baumgaertner@ukp.informatik.tu-darmstadt.de",
-    packages=find_packages(exclude=("tests", ".gitignore", "pytest.ini", "requirements.dev.txt")),
+    packages=find_packages(
+        exclude=("tests", ".gitignore", "pytest.ini", "requirements.dev.txt")
+    ),
     install_requires=[
         "uvicorn>=0.15.0",
         "fastapi>=0.65.2",

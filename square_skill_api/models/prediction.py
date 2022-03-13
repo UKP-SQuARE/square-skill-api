@@ -237,7 +237,6 @@ class QueryOutput(BaseModel):
 
         return cls(predictions=predictions)
 
-
     @classmethod
     def from_generation(
         cls,
@@ -250,12 +249,10 @@ class QueryOutput(BaseModel):
             model_api_output (Dict): Output returned from the model api.
         """
 
-        predictions = []    
+        predictions = []
         for ans in model_api_output["generated_texts"][0]:
             # output_score is None for now
-            prediction_output = PredictionOutput(
-                output=ans, output_score=1
-            )
+            prediction_output = PredictionOutput(output=ans, output_score=1)
             prediction = Prediction(
                 prediction_score=1,
                 prediction_output=prediction_output,
