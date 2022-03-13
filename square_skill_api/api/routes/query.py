@@ -1,9 +1,8 @@
+import logging
+
 from fastapi import APIRouter, Depends
 
-from square_skill_api.api import auth
-from square_skill_api.models.request import QueryRequest
-from square_skill_api.models.prediction import QueryOutput
-import logging
+from square_skill_api.models import QueryOutput, QueryRequest
 
 logger = logging.getLogger(__name__)
 
