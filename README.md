@@ -4,7 +4,7 @@ This package is used for providing a unified API for all skills and facilitating
 ## Installation
 To install the latest stable version run:
 ```bash
-pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.12
+pip install git+https://github.com/UKP-SQuARE/square-skill-api.git@v0.0.18
 ```
 To install from the master branch:
 ```bash
@@ -15,8 +15,7 @@ pip install git+https://github.com/UKP-SQuARE/square-skill-api.git
 After installing, a simple predict function can be implemented and this package will create a FastAPI app from it.
 ```python3
 from square_skill_api import get_app
-from square_skill_api.models.prediction import QueryOutput, Prediction, PredictionOutput
-from square_skill_api.models.request import QueryRequest
+from square_skill_api.models import QueryOutput, Prediction, PredictionOutput, QueryRequest
 
 async def predict(request: QueryRequest) -> QueryOutput:
     # here goes the logic for handling the input request.
