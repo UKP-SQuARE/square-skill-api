@@ -177,8 +177,13 @@ class QueryOutput(BaseModel):
 
         predictions = []
         predictions_scores = model_api_output["model_outputs"]["logits"][0]
-        for prediction_score, answer, prediction_documents in zip(
-            predictions_scores, answers, prediction_documents_iter
+        all_attributions = model_api_output.get("attributions", [])
+        for prediction_score, answer, prediction_documents, attributions in zip_longest(
+            predictions_scores,
+            answers,
+            prediction_documents_iter,
+            all_attributions,
+            fillvalue=None,
         ):
 
             prediction_output = PredictionOutput(
@@ -189,6 +194,7 @@ class QueryOutput(BaseModel):
                 prediction_score=prediction_score,
                 prediction_output=prediction_output,
                 prediction_documents=prediction_documents,
+                attributions=attributions,
             )
             predictions.append(prediction)
 
@@ -212,8 +218,11 @@ class QueryOutput(BaseModel):
         """
         # TODO: make this work with the datastore api output to support all
         # prediction_document fields
+        all_attributions = model_api_output.get("attributions", [])
         predictions: List[Prediction] = []
-        for i, answers in enumerate(model_api_output["answers"]):
+        for i, (answers, attributions) in enumerate(
+            zip_longest(model_api_output["answers"], all_attributions, fillvalue=None)
+        ):
             if isinstance(context, list):
                 assert isinstance(context_score, list)
                 context_doc_i = context[i]
@@ -249,6 +258,7 @@ class QueryOutput(BaseModel):
                         prediction_score=prediction_score,
                         prediction_output=prediction_output,
                         prediction_documents=prediction_documents,
+                        attributions=attributions,
                     )
                 )
 
@@ -267,13 +277,18 @@ class QueryOutput(BaseModel):
         """
 
         predictions = []
-        for ans in model_api_output["generated_texts"][0]:
+        for answer, attributions in zip_longest(
+            model_api_output["generated_texts"][0],
+            model_api_output.get("attributions", []),
+            fillvalue=None,
+        ):
             # output_score is None for now
-            prediction_output = PredictionOutput(output=ans, output_score=1)
+            prediction_output = PredictionOutput(output=answer, output_score=1)
             prediction = Prediction(
                 prediction_score=1,
                 prediction_output=prediction_output,
                 prediction_documents=[PredictionDocument(document=context)],
+                attributions=attributions,
             )
 
             predictions.append(prediction)
