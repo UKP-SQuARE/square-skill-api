@@ -3,6 +3,7 @@ from typing import Dict, Any, Optional
 
 from pydantic import BaseModel, Field
 
+
 class ExplainKwargsMethod(str, Enum):
     SIMPLE_GRADS = "simple_grads"
     INTEGRATED_GRADS = "integrated_grads"
@@ -10,18 +11,21 @@ class ExplainKwargsMethod(str, Enum):
     ATTENTION = "attention"
     SCALED_ATTENTION = "scaled_attention"
 
+
 class ExplainKwargsMode(str, Enum):
     ALL = "all"
     QUESTION = "question"
     CONTEXT = "context"
+
 
 class ExplainKwargs(BaseModel):
     method: ExplainKwargsMethod
     top_k: int = Field(..., ge=0)
     mode: ExplainKwargsMode
 
-    class Config:  
+    class Config:
         use_enum_values = True
+
 
 class QueryRequest(BaseModel):
     """The model for a query request that the skill receives."""
