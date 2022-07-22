@@ -1,6 +1,6 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
-from pydantic import BaseModel, Field, PositiveInt
+from pydantic import BaseModel, Field
 
 
 class QueryRequest(BaseModel):
@@ -16,3 +16,6 @@ class QueryRequest(BaseModel):
         {}, description="Skill information. See Skill-Manager for details."
     )
     user_id: str = Field("")
+    explain_kwargs: Optional[Dict] = Field(
+        {}, description="Optional values for obtaining explainability outputs."
+    )
