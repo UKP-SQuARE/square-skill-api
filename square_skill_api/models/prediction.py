@@ -36,7 +36,7 @@ class PredictionDocument(BaseModel):
 
 
 class TokenAttribution(BaseModel):
-    __root__: List[Union[int, str, float]] = Field(
+    __root__: List = Field(
         ...,
         description="A list holding three items: (1) the index, (2) the word and (3) the score.",
     )
