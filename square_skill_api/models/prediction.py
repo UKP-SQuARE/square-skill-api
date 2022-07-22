@@ -194,8 +194,10 @@ class QueryOutput(BaseModel):
                 prediction_score=prediction_score,
                 prediction_output=prediction_output,
                 prediction_documents=prediction_documents,
-                attributions=attributions,
             )
+            if attributions:
+                prediction.attributions = attributions
+
             predictions.append(prediction)
 
         return cls(predictions=predictions)
@@ -253,14 +255,15 @@ class QueryOutput(BaseModel):
                     if context_doc_i
                     else []
                 )
-                predictions.append(
-                    Prediction(
-                        prediction_score=prediction_score,
-                        prediction_output=prediction_output,
-                        prediction_documents=prediction_documents,
-                        attributions=attributions,
-                    )
+                prediction = Prediction(
+                    prediction_score=prediction_score,
+                    prediction_output=prediction_output,
+                    prediction_documents=prediction_documents,
                 )
+                if attributions:
+                    prediction.attributions = attributions
+
+                predictions.append(prediction)
 
         return cls(predictions=predictions)
 
@@ -288,8 +291,9 @@ class QueryOutput(BaseModel):
                 prediction_score=1,
                 prediction_output=prediction_output,
                 prediction_documents=[PredictionDocument(document=context)],
-                attributions=attributions,
             )
+            if attributions:
+                prediction.attributions = attributions
 
             predictions.append(prediction)
 
