@@ -35,6 +35,18 @@ class PredictionDocument(BaseModel):
     )
 
 
+class TokenAttribution(BaseModel):
+    __root__: List[Union[int, str, float]] = Field(
+        ...,
+        description="A list holding three items: (1) the index, (2) the word and (3) the score.",
+    )
+
+
+class Attributions(BaseModel):
+    question: List[TokenAttribution]
+    context: List[TokenAttribution]
+
+
 class Prediction(BaseModel):
     """A single prediction for a query."""
 
@@ -49,6 +61,9 @@ class Prediction(BaseModel):
         [],
         description="A list of the documents used by the skill to derive this prediction. "
         "Empty if no documents were used",
+    )
+    attributions: Optional[Attributions] = Field(
+        {}, description="Feature attributions for the question and context"
     )
 
 
