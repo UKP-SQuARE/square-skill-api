@@ -62,8 +62,8 @@ class Prediction(BaseModel):
         description="A list of the documents used by the skill to derive this prediction. "
         "Empty if no documents were used",
     )
-    attributions: Optional[Attributions] = Field(
-        {}, description="Feature attributions for the question and context"
+    attributions: Union[None, Attributions] = Field(
+        None, description="Feature attributions for the question and context"
     )
 
 
