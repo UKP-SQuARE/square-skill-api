@@ -94,3 +94,11 @@ def model_api_question_answering_ouput_factory():
         }
 
     return model_api_question_answering_ouput
+
+
+@fixture
+def model_api_attribution_output_factory():
+    def attribution_factory():
+        return [{"question": [[1, "hello", 0.1]], "context": [1, "world", 0.2]}]
+
+    return attribution_factory
