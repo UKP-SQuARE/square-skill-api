@@ -254,6 +254,10 @@ class QueryOutput(BaseModel):
             doc_answer_attributions = [[] * num_docs]
         else:
             # some attributions have been returned
+            if len(doc_answer_attributions) == 1 and isinstance(
+                doc_answer_attributions[0], dict
+            ):
+                doc_answer_attributions[0] = [doc_answer_attributions[0]]
             doc_answer_attributions.extend(
                 [] for _ in range(num_docs - len(doc_answer_attributions))
             )
