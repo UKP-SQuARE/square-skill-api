@@ -255,7 +255,7 @@ class QueryOutput(BaseModel):
             all_attributions = [[] for _ in range(batch_size)]
         elif len(all_attributions) == 1 and not isinstance(all_attributions[0], list):
             all_attributions = [all_attributions]
-        logger.info("attributions={}".format(attributions))
+        logger.info("all_attributions={}".format(all_attributions))
 
         # loop over docs
         for i, (answers, attributions) in enumerate(
