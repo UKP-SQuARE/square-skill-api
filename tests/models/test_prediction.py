@@ -70,6 +70,26 @@ def test_query_output_from_sequence_classification(
         )
 
 
+def test_query_output_with_attributions_sorting(
+    model_api_sequence_classification_ouput_factory,
+    model_api_attribution_output_factory,
+):
+
+    n = 3
+    answers = ["door {i}".format(i=i) for i in range(n)]
+    logits = [0.1, 0.7, 0.2]
+    model_api_output = model_api_sequence_classification_ouput_factory(
+        n=n, logits=logits
+    )
+    model_api_output["attributions"] = model_api_attribution_output_factory()
+
+    query_output = QueryOutput.from_sequence_classification(
+        answers=answers, model_api_output=model_api_output, context=None
+    )
+    assert query_output.predictions[0].attributions is not None
+    assert all(p.attributions is None for p in query_output.predictions[1:])
+
+
 @pytest.mark.parametrize(
     "context,context_score,test_no_answer,n",
     [

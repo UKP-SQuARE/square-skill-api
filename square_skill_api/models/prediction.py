@@ -1,6 +1,7 @@
 from itertools import zip_longest
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
+import numpy as np
 from pydantic import BaseModel, Field, validator
 
 NO_ANSWER_FOUND_STRING = "No answer found."
@@ -45,6 +46,8 @@ class TokenAttribution(BaseModel):
 class Attributions(BaseModel):
     question: List[TokenAttribution]
     context: List[TokenAttribution]
+    question_tokens: Optional[List[str]]
+    context_tokens: Optional[List[str]]
 
 
 class Prediction(BaseModel):
@@ -154,6 +157,20 @@ class QueryOutput(BaseModel):
 
         return prediction_documents_iter
 
+    @staticmethod
+    def extend_and_sort_attributions_to_scores(
+        scores: List, attributions: List, fill_value=None
+    ):
+        """extends attributios to same len as `scores and sorts according to `scores`"""
+        # sort attributions by logits
+        sort_idx = np.argsort(scores)[::-1]
+        len_diff = len(scores) - len(attributions)
+        if len_diff > 0:
+            # extend attributions to be the same length as logits
+            attributions.extend([fill_value] * len_diff)
+            attributions = [x for _, x in sorted(zip(sort_idx, attributions))]
+        return attributions
+
     @classmethod
     def from_sequence_classification(
         cls,
@@ -178,6 +195,10 @@ class QueryOutput(BaseModel):
         predictions = []
         predictions_scores = model_api_output["model_outputs"]["logits"][0]
         all_attributions = model_api_output.get("attributions", [])
+        all_attributions = cls.extend_and_sort_attributions_to_scores(
+            scores=predictions_scores, attributions=all_attributions
+        )
+
         for prediction_score, answer, prediction_documents, attributions in zip_longest(
             predictions_scores,
             answers,
@@ -222,26 +243,39 @@ class QueryOutput(BaseModel):
         # prediction_document fields
         all_attributions = model_api_output.get("attributions", [])
         predictions: List[Prediction] = []
+
+        batch_size = len(model_api_output["answers"])
+        all_attributions = model_api_output.get(
+            "attributions", [[] for _ in range(batch_size)]
+        )
+        if not isinstance(all_attributions[0], list):
+            # only single attributions have been returned
+            all_attributions = [all_attributions]
+
+        # loop over docs
         for i, (answers, attributions) in enumerate(
             zip_longest(model_api_output["answers"], all_attributions, fillvalue=None)
         ):
             if isinstance(context, list):
-                assert isinstance(context_score, list)
                 context_doc_i = context[i]
                 context_score_i = context_score[i]
             else:
                 context_doc_i = "" if context is None else context
                 context_score_i = 1 if context_score is None else context_score
 
-            for answer in answers:
+            # get the sorted attributions for the answers from one doc
+            scores = [answer["score"] for answer in answers]
+            attributions = cls.extend_and_sort_attributions_to_scores(
+                scores=scores, attributions=all_attributions[i]
+            )
+            # loop over answers per doc
+            for answer, prediction_score in zip(answers, scores):
                 answer_str = answer["answer"]
                 if not answer_str:
                     answer_str = NO_ANSWER_FOUND_STRING
-                answer_score = answer["score"]
 
-                prediction_score = answer_score
                 prediction_output = PredictionOutput(
-                    output=answer_str, output_score=answer_score
+                    output=answer_str, output_score=prediction_score
                 )
                 # NOTE: currently only one document per answer is supported
                 prediction_documents = (
@@ -272,14 +306,19 @@ class QueryOutput(BaseModel):
         cls,
         model_api_output: Dict,
         context: Union[None, str, List[str]] = None,
+        context_score: Union[None, float, List[float]] = None,
     ):
         """Constructor for QueryOutput from generation of model api.
 
         Args:
             model_api_output (Dict): Output returned from the model api.
+            context (Union[None, str, List[str]], optional): Context used to obtain
+            model api output. Defaults to None.
+            context_score (Union[None, float, List[float]], optional): Context scores
+            from datastores.
         """
 
-        predictions = []
+        predictions: List[Prediction] = []
         for answer, attributions in zip_longest(
             model_api_output["generated_texts"][0],
             model_api_output.get("attributions", []),

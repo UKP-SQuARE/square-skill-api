@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import List, Union
 
 from pytest import fixture
 from square_skill_api.models import prediction
@@ -48,8 +48,10 @@ def predictions_factory():
 
 @fixture
 def model_api_sequence_classification_ouput_factory():
-    def model_api_sequence_classification_ouput(n: int):
-        logits = [random.random() for _ in range(n)]
+    def model_api_sequence_classification_ouput(
+        n: int, logits: Union[None, List] = None
+    ):
+        logits = [random.random() for _ in range(n)] if not logits else logits
         max_logit = max(logits)
         argmax = logits.index(max_logit)
         return {
@@ -94,3 +96,11 @@ def model_api_question_answering_ouput_factory():
         }
 
     return model_api_question_answering_ouput
+
+
+@fixture
+def model_api_attribution_output_factory():
+    def attribution_factory():
+        return [{"question": [[1, "hello", 0.1]], "context": [1, "world", 0.2]}]
+
+    return attribution_factory
