@@ -112,9 +112,9 @@ def test_query_output_from_question_answering(
     context_score,
     test_no_answer,
     n,
-    model_api_question_answering_ouput_factory,
+    model_api_question_answering_output_factory,
 ):
-    model_api_output = model_api_question_answering_ouput_factory(
+    model_api_output = model_api_question_answering_output_factory(
         n_docs=len(context) if isinstance(context, list) else 1, n_answers=n
     )
     if test_no_answer:
@@ -125,7 +125,7 @@ def test_query_output_from_question_answering(
     if context is None:
         assert all(p.prediction_documents == [] for p in query_output.predictions)
     elif isinstance(context, str):
-        # span=[0, 0] is hardcoded in the model_api_question_answering_ouput_factory
+        # span=[0, 0] is hardcoded in the model_api_question_answering_output_factory
         assert all(
             p.prediction_documents
             == [

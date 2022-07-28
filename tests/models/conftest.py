@@ -67,7 +67,7 @@ def model_api_sequence_classification_ouput_factory():
 
 
 @fixture
-def model_api_question_answering_ouput_factory():
+def model_api_question_answering_output_factory():
     def model_api_question_answering_ouput(
         n_docs: int, n_answers: int, answer: str = None
     ):
