@@ -1,8 +1,11 @@
+import logging
 from itertools import zip_longest
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 from pydantic import BaseModel, Field, validator
+
+logger = logging.getLogger(__name__)
 
 NO_ANSWER_FOUND_STRING = "No answer found."
 
@@ -241,20 +244,25 @@ class QueryOutput(BaseModel):
         """
         # TODO: make this work with the datastore api output to support all
         # prediction_document fields
-        all_attributions = model_api_output.get("attributions", [])
         predictions: List[Prediction] = []
+        num_docs = len(model_api_output["answers"])
 
-        batch_size = len(model_api_output["answers"])
-        all_attributions = model_api_output.get(
-            "attributions", [[] for _ in range(batch_size)]
-        )
-        if not isinstance(all_attributions[0], list):
-            # only single attributions have been returned
-            all_attributions = [all_attributions]
-
+        doc_answer_attributions = model_api_output.get("attributions", None)
+        if not doc_answer_attributions:
+            doc_answer_attributions = [[] for _ in range(num_docs)]
+        else:
+            # some attributions have been returned
+            if len(doc_answer_attributions) == 1 and isinstance(
+                doc_answer_attributions[0], dict
+            ):
+                doc_answer_attributions[0] = [doc_answer_attributions[0]]
+            doc_answer_attributions.extend(
+                [] for _ in range(num_docs - len(doc_answer_attributions))
+            )
+        logger.info("doc_answer_attributions={}".format(doc_answer_attributions))
         # loop over docs
         for i, (answers, attributions) in enumerate(
-            zip_longest(model_api_output["answers"], all_attributions, fillvalue=None)
+            zip(model_api_output["answers"], doc_answer_attributions)
         ):
             if isinstance(context, list):
                 context_doc_i = context[i]
@@ -265,11 +273,14 @@ class QueryOutput(BaseModel):
 
             # get the sorted attributions for the answers from one doc
             scores = [answer["score"] for answer in answers]
-            attributions = cls.extend_and_sort_attributions_to_scores(
-                scores=scores, attributions=all_attributions[i]
+            answer_attributions = cls.extend_and_sort_attributions_to_scores(
+                scores=scores, attributions=attributions
             )
+            logger.info("answer_attributions={}".format(answer_attributions))
             # loop over answers per doc
-            for answer, prediction_score in zip(answers, scores):
+            for answer, prediction_score, attributions in zip(
+                answers, scores, answer_attributions
+            ):
                 answer_str = answer["answer"]
                 if not answer_str:
                     answer_str = NO_ANSWER_FOUND_STRING
