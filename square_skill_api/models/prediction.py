@@ -245,11 +245,12 @@ class QueryOutput(BaseModel):
         predictions: List[Prediction] = []
 
         batch_size = len(model_api_output["answers"])
-        all_attributions = model_api_output.get(
-            "attributions", [[] for _ in range(batch_size)]
-        )
-        if not isinstance(all_attributions[0], list):
-            # only single attributions have been returned
+
+        all_attributions = model_api_output.get("attributions", None)
+        # convert all_attributions to [[None/attribution]]
+        if not all_attributions:
+            all_attributions = [[] for _ in range(batch_size)]
+        elif len(all_attributions) == 1 and not isinstance(all_attributions[0], list):
             all_attributions = [all_attributions]
 
         # loop over docs
