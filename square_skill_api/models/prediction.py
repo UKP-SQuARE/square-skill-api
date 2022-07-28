@@ -244,9 +244,7 @@ class QueryOutput(BaseModel):
         """
         # TODO: make this work with the datastore api output to support all
         # prediction_document fields
-        all_attributions = model_api_output.get("attributions", [])
         predictions: List[Prediction] = []
-
         num_docs = len(model_api_output["answers"])
 
         doc_answer_attributions = model_api_output.get("attributions", None)
