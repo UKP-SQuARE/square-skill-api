@@ -247,19 +247,20 @@ class QueryOutput(BaseModel):
         all_attributions = model_api_output.get("attributions", [])
         predictions: List[Prediction] = []
 
-        batch_size = len(model_api_output["answers"])
+        num_docs = len(model_api_output["answers"])
 
-        all_attributions = model_api_output.get("attributions", None)
-        # convert all_attributions to [[None/attribution]]
-        if not all_attributions:
-            all_attributions = [[] for _ in range(batch_size)]
-        elif len(all_attributions) == 1 and not isinstance(all_attributions[0], list):
-            all_attributions = [all_attributions]
-        logger.info("all_attributions={}".format(all_attributions))
+        doc_answer_attributions = model_api_output.get("attributions", None)
+        if not doc_answer_attributions:
+            doc_answer_attributions = [[] * num_docs]
+        else:
+            # some attributions have been returned
+            doc_answer_attributions.extend(
+                [] for _ in range(num_docs - len(doc_answer_attributions))
+            )
 
         # loop over docs
         for i, (answers, attributions) in enumerate(
-            zip_longest(model_api_output["answers"], all_attributions, fillvalue=None)
+            zip(model_api_output["answers"], doc_answer_attributions)
         ):
             if isinstance(context, list):
                 context_doc_i = context[i]
@@ -270,11 +271,13 @@ class QueryOutput(BaseModel):
 
             # get the sorted attributions for the answers from one doc
             scores = [answer["score"] for answer in answers]
-            attributions = cls.extend_and_sort_attributions_to_scores(
-                scores=scores, attributions=all_attributions[i]
+            answer_attributions = cls.extend_and_sort_attributions_to_scores(
+                scores=scores, attributions=attributions
             )
             # loop over answers per doc
-            for answer, prediction_score in zip(answers, scores):
+            for answer, prediction_score, attributions in zip(
+                answers, scores, answer_attributions
+            ):
                 answer_str = answer["answer"]
                 if not answer_str:
                     answer_str = NO_ANSWER_FOUND_STRING
