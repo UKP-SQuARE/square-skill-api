@@ -47,10 +47,10 @@ class TokenAttribution(BaseModel):
 
 
 class Attributions(BaseModel):
-    question: List[TokenAttribution]
-    context: List[TokenAttribution]
-    question_tokens: Optional[List[str]]
-    context_tokens: Optional[List[str]]
+    topk_question_idx: List[int]
+    topk_context_idx: List[int]
+    question_tokens: List[TokenAttribution]
+    context_tokens: List[TokenAttribution]
 
 
 class Prediction(BaseModel):
