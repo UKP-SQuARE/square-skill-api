@@ -1,8 +1,11 @@
+import logging
 from itertools import zip_longest
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 from pydantic import BaseModel, Field, validator
+
+logger = logging.getLogger(__name__)
 
 NO_ANSWER_FOUND_STRING = "No answer found."
 
@@ -252,6 +255,7 @@ class QueryOutput(BaseModel):
             all_attributions = [[] for _ in range(batch_size)]
         elif len(all_attributions) == 1 and not isinstance(all_attributions[0], list):
             all_attributions = [all_attributions]
+        logger.info("attributions={}".format(attributions))
 
         # loop over docs
         for i, (answers, attributions) in enumerate(
