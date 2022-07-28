@@ -257,7 +257,7 @@ class QueryOutput(BaseModel):
             doc_answer_attributions.extend(
                 [] for _ in range(num_docs - len(doc_answer_attributions))
             )
-
+        logger.info("doc_answer_attributions={}".format(doc_answer_attributions))
         # loop over docs
         for i, (answers, attributions) in enumerate(
             zip(model_api_output["answers"], doc_answer_attributions)
@@ -274,6 +274,7 @@ class QueryOutput(BaseModel):
             answer_attributions = cls.extend_and_sort_attributions_to_scores(
                 scores=scores, attributions=attributions
             )
+            logger.info("answer_attributions={}".format(answer_attributions))
             # loop over answers per doc
             for answer, prediction_score, attributions in zip(
                 answers, scores, answer_attributions
