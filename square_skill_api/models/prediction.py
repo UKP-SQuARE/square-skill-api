@@ -249,7 +249,7 @@ class QueryOutput(BaseModel):
 
         doc_answer_attributions = model_api_output.get("attributions", None)
         if not doc_answer_attributions:
-            doc_answer_attributions = [[] * num_docs]
+            doc_answer_attributions = [[] for _ in range(num_docs)]
         else:
             # some attributions have been returned
             if len(doc_answer_attributions) == 1 and isinstance(
