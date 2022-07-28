@@ -46,6 +46,8 @@ class TokenAttribution(BaseModel):
 class Attributions(BaseModel):
     question: List[TokenAttribution]
     context: List[TokenAttribution]
+    question_tokens: Optional[List[str]]
+    context_tokens: Optional[List[str]]
 
 
 class Prediction(BaseModel):
@@ -304,14 +306,19 @@ class QueryOutput(BaseModel):
         cls,
         model_api_output: Dict,
         context: Union[None, str, List[str]] = None,
+        context_score: Union[None, float, List[float]] = None,
     ):
         """Constructor for QueryOutput from generation of model api.
 
         Args:
             model_api_output (Dict): Output returned from the model api.
+            context (Union[None, str, List[str]], optional): Context used to obtain
+            model api output. Defaults to None.
+            context_score (Union[None, float, List[float]], optional): Context scores
+            from datastores.
         """
 
-        predictions = []
+        predictions: List[Prediction] = []
         for answer, attributions in zip_longest(
             model_api_output["generated_texts"][0],
             model_api_output.get("attributions", []),
