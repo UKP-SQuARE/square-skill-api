@@ -14,5 +14,6 @@ setup(
         "uvicorn>=0.15.0",
         "fastapi>=0.65.2",
         "pydantic>=1.8.2",
+        "numpy>=1.21.3",
     ],
 )
