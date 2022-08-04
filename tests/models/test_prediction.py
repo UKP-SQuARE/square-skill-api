@@ -70,6 +70,18 @@ def test_query_output_from_sequence_classification(
         )
 
 
+def test_query_output_from_question_answering_with_graph(
+    model_api_sequence_classification_with_graph_ouput_factory,
+):
+    n = 3
+    answers = ["door {i}".format(i=i) for i in range(n)]
+    model_api_output = model_api_sequence_classification_with_graph_ouput_factory(n=n)
+    query_output = QueryOutput.from_sequence_classification_with_graph(
+        answers=answers, model_api_output=model_api_output
+    )
+    pass
+
+
 def test_query_output_with_attributions_sorting(
     model_api_sequence_classification_ouput_factory,
     model_api_attribution_output_factory,
