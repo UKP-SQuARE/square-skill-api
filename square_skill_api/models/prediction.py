@@ -260,8 +260,8 @@ class QueryOutput(BaseModel):
     ):
         predictions = []
         predictions_scores = model_api_output["model_outputs"]["logits"][0]
-        for i, (prediction_score, answer) in zip(
-            enumerate(predictions_scores, answers)
+        for i, (prediction_score, answer) in enumerate(
+            zip(predictions_scores, answers)
         ):
             prediction_output = PredictionOutput(
                 output=answer, output_score=prediction_score
