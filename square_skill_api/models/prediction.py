@@ -278,7 +278,7 @@ class QueryOutput(BaseModel):
                 )
                 prediction.prediction_graph = prediction_graph
 
-            predictions.append(Prediction)
+            predictions.append(prediction)
 
         return cls(predictions=predictions)
 
