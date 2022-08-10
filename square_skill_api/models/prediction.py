@@ -44,7 +44,7 @@ class Node(BaseModel):
     name: str
     q_node: bool
     ans_node: bool
-    width: float
+    weight: float
 
 
 class Edge(BaseModel):
