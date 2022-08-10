@@ -98,14 +98,14 @@ def model_api_sequence_classification_with_graph_ouput_factory():
                         "name": "google",
                         "q_node": True,
                         "ans_node": False,
-                        "width": -0.05396396666765213,
+                        "weight": -0.05396396666765213,
                     },
                     "184904": {
                         "id": 184904,
                         "name": "resection",
                         "q_node": False,
                         "ans_node": False,
-                        "width": -0.06964521110057831,
+                        "weight": -0.06964521110057831,
                     },
                 },
                 "edges": {
@@ -130,14 +130,14 @@ def model_api_sequence_classification_with_graph_ouput_factory():
                         "name": "google",
                         "q_node": True,
                         "ans_node": False,
-                        "width": 0.2670625150203705,
+                        "weight": 0.2670625150203705,
                     },
                     "132569": {
                         "id": 132569,
                         "name": "gps",
                         "q_node": True,
                         "ans_node": False,
-                        "width": 0.047409314662218094,
+                        "weight": 0.047409314662218094,
                     },
                 },
                 "edges": {
