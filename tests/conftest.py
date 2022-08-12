@@ -26,12 +26,14 @@ def predictions_factory():
         answer_scores: List[float],
         document_scores: List[float],
         answers: List[str] = None,
+        question: str = "test question",
     ):
         predictions = []
         for document_i, document_score in enumerate(document_scores):
             for answer_i, answer_score in enumerate(answer_scores):
                 predictions.append(
                     Prediction(
+                        question=question,
                         prediction_score=answer_score,
                         prediction_output=PredictionOutput(
                             output=answers[answer_i]
@@ -59,12 +61,12 @@ def predictions_factory():
 @fixture
 def model_api_sequence_classification_ouput_factory():
     def model_api_sequence_classification_ouput(
-        n: int, logits: Union[None, List] = None
+        n: int, logits: Union[None, List] = None, questions: Union[None, List] = None
     ):
         logits = [random.random() for _ in range(n)] if not logits else logits
         max_logit = max(logits)
         argmax = logits.index(max_logit)
-        return {
+        model_api_output = {
             "labels": [argmax],
             "id2label": {i: str(i) for i in range(n)},
             "model_outputs": {
@@ -72,6 +74,9 @@ def model_api_sequence_classification_ouput_factory():
             },
             "model_output_is_encoded": False,
         }
+        if questions:
+            model_api_output["questions"] = questions
+        return model_api_output
 
     return model_api_sequence_classification_ouput
 

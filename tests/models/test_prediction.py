@@ -53,7 +53,10 @@ def test_query_output_from_sequence_classification(
     model_api_output = model_api_sequence_classification_ouput_factory(n=n)
     context = None
     query_output = QueryOutput.from_sequence_classification(
-        answers=answers, model_api_output=model_api_output, context=context
+        questions="test question",
+        answers=answers,
+        model_api_output=model_api_output,
+        context=context,
     )
 
     if context is None:
@@ -77,9 +80,8 @@ def test_query_output_from_question_answering_with_graph(
     answers = ["door {i}".format(i=i) for i in range(n)]
     model_api_output = model_api_sequence_classification_with_graph_ouput_factory(n=n)
     query_output = QueryOutput.from_sequence_classification_with_graph(
-        answers=answers, model_api_output=model_api_output
+        questions="test question", answers=answers, model_api_output=model_api_output
     )
-    pass
 
 
 def test_query_output_with_attributions_sorting(
@@ -96,7 +98,10 @@ def test_query_output_with_attributions_sorting(
     model_api_output["attributions"] = model_api_attribution_output_factory()
 
     query_output = QueryOutput.from_sequence_classification(
-        answers=answers, model_api_output=model_api_output, context=None
+        questions="test question",
+        answers=answers,
+        model_api_output=model_api_output,
+        context=None,
     )
     assert query_output.predictions[0].attributions is not None
     assert all(p.attributions is None for p in query_output.predictions[1:])
@@ -132,7 +137,10 @@ def test_query_output_from_question_answering(
     if test_no_answer:
         model_api_output["answers"][1][-1]["answer"] = NO_ANSWER_FOUND_STRING
     query_output = QueryOutput.from_question_answering(
-        model_api_output=model_api_output, context=context, context_score=context_score
+        questions="test question",
+        model_api_output=model_api_output,
+        context=context,
+        context_score=context_score,
     )
     if context is None:
         assert all(p.prediction_documents == [] for p in query_output.predictions)
