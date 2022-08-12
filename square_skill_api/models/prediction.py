@@ -442,7 +442,7 @@ class QueryOutput(BaseModel):
                     prediction.attributions = cls.get_attribution_by_context_i(
                         attributions, i_context
                     )
-
+                logger.debug(f"prediction: {prediction}")
                 predictions.append(prediction)
 
         if "adversarial" in model_api_output:
