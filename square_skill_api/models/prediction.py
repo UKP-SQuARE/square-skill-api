@@ -152,14 +152,14 @@ class QueryOutput(BaseModel):
         return value
 
     @staticmethod
-    def get_attribution_by_context_i(
-        attributions: List[Dict[str, List[List[int]]]], context_i
+    def get_attribution_by_index(
+        attributions: List[Dict[str, List[List[int]]]], index
     ) -> Attributions:
 
         attribution_keys = attributions[0].keys()
         context_attributions = {}
         for k in attribution_keys:
-            context_attributions[k] = attributions[0][k][context_i]
+            context_attributions[k] = attributions[0][k][index]
 
         return Attributions.parse_obj(context_attributions)
 
@@ -223,20 +223,6 @@ class QueryOutput(BaseModel):
 
         return prediction_documents_iter
 
-    @staticmethod
-    def extend_and_sort_attributions_to_scores(
-        scores: List, attributions: List, fill_value=None
-    ) -> List[List]:
-        """extends attributios to same len as `scores and sorts according to `scores`"""
-        # sort attributions by logits
-        sort_idx = np.argsort(scores)[::-1]
-        len_diff = len(scores) - len(attributions)
-        if len_diff > 0:
-            # extend attributions to be the same length as logits
-            attributions.extend([fill_value] * len_diff)
-            attributions = [x for _, x in sorted(zip(sort_idx, attributions))]
-        return attributions
-
     @classmethod
     def from_sequence_classification(
         cls,
@@ -275,24 +261,19 @@ class QueryOutput(BaseModel):
 
         predictions = []
         predictions_scores = model_api_output["model_outputs"]["logits"][0]
-        all_attributions = model_api_output.get("attributions", [])
-        all_attributions = cls.extend_and_sort_attributions_to_scores(
-            scores=predictions_scores, attributions=all_attributions
-        )
+        attributions = model_api_output.get("attributions", None)
 
         for (
-            question,
-            prediction_score,
-            answer,
-            prediction_documents,
-            attributions,
-        ) in zip_longest(
-            questions,
-            predictions_scores,
-            answers,
-            prediction_documents_iter,
-            all_attributions,
-            fillvalue=None,
+            i_answer,
+            (question, prediction_score, answer, prediction_documents),
+        ) in enumerate(
+            zip_longest(
+                questions,
+                predictions_scores,
+                answers,
+                prediction_documents_iter,
+                fillvalue=None,
+            )
         ):
 
             prediction_output = PredictionOutput(
@@ -306,7 +287,9 @@ class QueryOutput(BaseModel):
                 prediction_documents=prediction_documents,
             )
             if attributions:
-                prediction.attributions = attributions
+                prediction.attributions = cls.get_attribution_by_index(
+                    attributions, index=i_answer
+                )
 
             predictions.append(prediction)
 
@@ -444,8 +427,8 @@ class QueryOutput(BaseModel):
                     prediction_documents=prediction_documents,
                 )
                 if attributions and i_answer == top_answer_idx:
-                    prediction.attributions = cls.get_attribution_by_context_i(
-                        attributions, i_context
+                    prediction.attributions = cls.get_attribution_by_index(
+                        attributions, index=i_context
                     )
                 logger.debug(f"prediction: {prediction}")
                 predictions.append(prediction)
