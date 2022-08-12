@@ -138,16 +138,18 @@ class QueryOutput(BaseModel):
         return (answer_found, answer_score, document_score)
 
     @staticmethod
-    def read_questions(questions, model_api_output, len: int) -> List[str]:
+    def overwrite_from_model_api_output(
+        model_api_output, key: str, value, len: int = None
+    ) -> List[str]:
         """
-        If `questions` is given in the model_api_output, overwrite it. Else processes
-        provided questions.
+        If `key` is given in the model_api_output, overwrite value with it.
+        Else return provided value.
         """
-        if "questions" in model_api_output:
-            questions = model_api_output["questions"]
-        elif isinstance(questions, str):
-            questions = [questions] * len
-        return questions
+        if key in model_api_output:
+            value = model_api_output[key]
+        elif isinstance(value, str) and len is not None:
+            value = [value] * len
+        return value
 
     @staticmethod
     def get_attribution_by_context_i(
@@ -251,10 +253,16 @@ class QueryOutput(BaseModel):
             context (Union[None, str, List[str]], optional): Context used to obtain
             model api output. Defaults to None.
         """
-        questions = cls.read_questions(
-            questions,
+        questions = cls.overwrite_from_model_api_output(
             model_api_output,
+            key="questions",
+            value=questions,
             len=len(model_api_output["model_outputs"]["logits"][0]),
+        )
+        context = cls.overwrite_from_model_api_output(
+            model_api_output,
+            key="context",
+            value=context,
         )
 
         # TODO: make this work with the datastore api output to support all
@@ -317,9 +325,10 @@ class QueryOutput(BaseModel):
         model_api_output: Dict,
     ):
 
-        questions = cls.read_questions(
-            questions,
+        questions = cls.overwrite_from_model_api_output(
             model_api_output,
+            key="questions",
+            value=questions,
             len=len(model_api_output["model_outputs"]["logits"][0]),
         )
         predictions = []
@@ -365,8 +374,11 @@ class QueryOutput(BaseModel):
             context_score (Union[None, float, List[float]], optional): Context scores
             from datastores.
         """
-        questions = cls.read_questions(
-            questions, model_api_output, len=len(model_api_output["answers"])
+        questions = cls.overwrite_from_model_api_output(
+            model_api_output,
+            value=questions,
+            key="questions",
+            len=len(model_api_output["answers"]),
         )
 
         # TODO: make this work with the datastore api output to support all
@@ -453,7 +465,7 @@ class QueryOutput(BaseModel):
             context_score (Union[None, float, List[float]], optional): Context scores
             from datastores.
         """
-        questions = cls.read_questions(
+        questions = cls.overwrite_from_model_api_output(
             questions, model_api_output, len=len(model_api_output["generated_texts"][0])
         )
 
