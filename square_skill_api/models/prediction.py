@@ -264,6 +264,7 @@ class QueryOutput(BaseModel):
             model_api_output,
             key="context",
             value=context,
+            len=len(model_api_output["model_outputs"]["logits"][0]),
         )
 
         # TODO: make this work with the datastore api output to support all
