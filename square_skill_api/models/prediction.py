@@ -296,19 +296,28 @@ class QueryOutput(BaseModel):
     @classmethod
     def from_sequence_classification_with_graph(
         cls,
+        questions: Union[str, List[str]],
         answers: List[str],
         model_api_output: Dict,
     ):
+
+        questions = cls.read_questions(
+            questions,
+            model_api_output,
+            len=len(model_api_output["model_outputs"]["logits"][0]),
+        )
         predictions = []
         predictions_scores = model_api_output["model_outputs"]["logits"][0]
-        for i, (prediction_score, answer) in enumerate(
-            zip(predictions_scores, answers)
+        for i, (question, prediction_score, answer) in enumerate(
+            zip(questions, predictions_scores, answers)
         ):
             prediction_output = PredictionOutput(
                 output=answer, output_score=prediction_score
             )
             prediction = Prediction(
-                prediction_score=prediction_score, prediction_output=prediction_output
+                question=question,
+                prediction_score=prediction_score,
+                prediction_output=prediction_output,
             )
 
             if i == model_api_output["labels"][0]:
