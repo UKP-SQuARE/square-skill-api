@@ -145,7 +145,7 @@ class QueryOutput(BaseModel):
         If `key` is given in the model_api_output, overwrite value with it.
         Else return provided value.
         """
-        if key in model_api_output:
+        if key in model_api_output and model_api_output[key]:
             value = model_api_output[key]
         if isinstance(value, str):
             value = [value] * len
