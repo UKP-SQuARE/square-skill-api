@@ -409,7 +409,7 @@ class QueryOutput(BaseModel):
             top_answer_idx = np.argmax(scores)
 
             logger.info(f"answers: {answers}")
-            logger.info(f"prediction_score: {prediction_score}")
+            logger.info(f"scores: {scores}")
             # loop over answers per doc
             for i_answer, (answer, prediction_score) in enumerate(
                 zip(
