@@ -1,10 +1,10 @@
 from enum import Enum
 from typing import Dict, Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator, root_validator
 
 
-class ExplainKwargsMethod(str, Enum):
+class SaliencyMethod(str, Enum):
     SIMPLE_GRADS = "simple_grads"
     INTEGRATED_GRADS = "integrated_grads"
     SMOOTH_GRADS = "smooth_grads"
@@ -19,12 +19,78 @@ class ExplainKwargsMode(str, Enum):
 
 
 class ExplainKwargs(BaseModel):
-    method: ExplainKwargsMethod
+    method: SaliencyMethod
     top_k: int = Field(..., ge=0)
     mode: ExplainKwargsMode
 
     class Config:
         use_enum_values = True
+
+
+class AdversarialKwargsMethod(str, Enum):
+    HOT_FLIP = "hotflip"
+    INPUT_REDUCTION = "input_reduction"
+    SUB_SPAN = "sub_span"
+    TOP_K = "top_k"
+
+
+class AdversarialKwargs(BaseModel):
+    method: AdversarialKwargsMethod
+    saliency_method: SaliencyMethod
+    max_flips: int = Field(
+        None, ge=1, description="Maximum number of flips to perform for HotFlip."
+    )
+    max_reductions: int = Field(
+        None,
+        ge=1,
+        description="Maximum number of reductions to perform for Input Reduction.",
+    )
+    span_length: int = Field(
+        None, ge=1, description="Length of the span to use for Span."
+    )
+    max_topk: int = Field(
+        None, ge=1, description="Maximum number of top-k to use for TopK."
+    )
+
+    class Config:
+        use_enum_values = True
+
+    @root_validator()
+    def validate_param_pairs(cls, values):
+        method2parm = {
+            AdversarialKwargsMethod.HOTFLIP: "max_flips",
+            AdversarialKwargsMethod.INPUT_REDUCTION: "max_reductions",
+            AdversarialKwargsMethod.SUB_SPAN: "span_length",
+            AdversarialKwargsMethod.TOP_K: "max_topk",
+        }
+        for method, param in method2parm.items():
+            if values["method"] == method and values[param] is None:
+                raise ValueError(f"{method.value} requires {param} to be set.")
+
+        return values
+
+    @root_validator()
+    def mutually_exclusive(cls, values):
+        mutually_exclusive_attributes = [
+            "max_flips",
+            "max_reductions",
+            "span_length",
+            "max_topk",
+        ]
+        num_not_none = sum(
+            [
+                0 if v is None else 1
+                for k, v in values.items()
+                if k in mutually_exclusive_attributes
+            ]
+        )
+        if num_not_none > 1:
+            raise ValueError(
+                "Only one of the following attributes can be specified: {}".format(
+                    mutually_exclusive_attributes
+                )
+            )
+        return values
 
 
 class QueryRequest(BaseModel):
@@ -42,4 +108,7 @@ class QueryRequest(BaseModel):
     user_id: str = Field("")
     explain_kwargs: Optional[Dict] = Field(
         {}, description="Optional values for obtaining explainability outputs."
+    )
+    adversarial_kwargs: Optional[Dict] = Field(
+        {}, description="Optional values for obtaining adversarial outputs."
     )
