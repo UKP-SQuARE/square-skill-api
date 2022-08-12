@@ -2,12 +2,22 @@ import random
 from typing import List, Union
 
 from pytest import fixture
-from square_skill_api.models import prediction
+
+
 from square_skill_api.models.prediction import (
     Prediction,
     PredictionDocument,
     PredictionOutput,
 )
+
+
+@fixture(scope="module")
+def monkeymodule():
+    from _pytest.monkeypatch import MonkeyPatch
+
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
 
 
 @fixture
@@ -69,6 +79,90 @@ def model_api_sequence_classification_ouput_factory():
         return model_api_output
 
     return model_api_sequence_classification_ouput
+
+
+@fixture
+def model_api_sequence_classification_with_graph_ouput_factory():
+    def model_api_sequence_classification_with_graph_ouput(
+        n: int, logits: Union[None, List] = None
+    ):
+        logits = [random.random() for _ in range(n)] if not logits else logits
+        max_logit = max(logits)
+        argmax = logits.index(max_logit)
+        return {
+            "labels": [argmax],
+            "id2label": {i: str(i) for i in range(n)},
+            "model_outputs": {
+                "logits": [logits],
+            },
+            "model_output_is_encoded": False,
+            "lm_subgraph": {
+                "nodes": {
+                    "23505": {
+                        "id": 23505,
+                        "name": "google",
+                        "q_node": True,
+                        "ans_node": False,
+                        "weight": -0.05396396666765213,
+                    },
+                    "184904": {
+                        "id": 184904,
+                        "name": "resection",
+                        "q_node": False,
+                        "ans_node": False,
+                        "weight": -0.06964521110057831,
+                    },
+                },
+                "edges": {
+                    "0": {
+                        "source": 23505,
+                        "target": 23505,
+                        "weight": 0.5,
+                        "label": "isa",
+                    },
+                    "1": {
+                        "source": 23505,
+                        "target": 184904,
+                        "weight": 1.0,
+                        "label": "atlocation",
+                    },
+                },
+            },
+            "attn_subgraph": {
+                "nodes": {
+                    "23505": {
+                        "id": 23505,
+                        "name": "google",
+                        "q_node": True,
+                        "ans_node": False,
+                        "weight": 0.2670625150203705,
+                    },
+                    "132569": {
+                        "id": 132569,
+                        "name": "gps",
+                        "q_node": True,
+                        "ans_node": False,
+                        "weight": 0.047409314662218094,
+                    },
+                },
+                "edges": {
+                    "0": {
+                        "source": 3296,
+                        "target": 3296,
+                        "weight": 1.0,
+                        "label": "atlocation",
+                    },
+                    "1": {
+                        "source": 3296,
+                        "target": 2210,
+                        "weight": 2.0,
+                        "label": "isa",
+                    },
+                },
+            },
+        }
+
+    return model_api_sequence_classification_with_graph_ouput
 
 
 @fixture

@@ -39,6 +39,31 @@ class PredictionDocument(BaseModel):
     )
 
 
+class Node(BaseModel):
+    id: int
+    name: str
+    q_node: bool
+    ans_node: bool
+    weight: float
+
+
+class Edge(BaseModel):
+    source: int
+    target: int
+    weight: float
+    label: str
+
+
+class SubGraph(BaseModel):
+    nodes: Dict[str, Node]
+    edges: Dict[str, Edge]
+
+
+class PredictionGraph(BaseModel):
+    lm_subgraph: SubGraph
+    attn_subgraph: SubGraph
+
+
 class TokenAttribution(BaseModel):
     __root__: List = Field(
         ...,
@@ -74,6 +99,7 @@ class Prediction(BaseModel):
         description="A list of the documents used by the skill to derive this prediction. "
         "Empty if no documents were used",
     )
+    prediction_graph: Union[None, PredictionGraph] = Field(None)
     attributions: Union[None, Attributions] = Field(
         None, description="Feature attributions for the question and context"
     )
@@ -266,6 +292,36 @@ class QueryOutput(BaseModel):
             predictions = cls(predictions=predictions)
 
         return predictions
+
+    @classmethod
+    def from_sequence_classification_with_graph(
+        cls,
+        answers: List[str],
+        model_api_output: Dict,
+    ):
+        predictions = []
+        predictions_scores = model_api_output["model_outputs"]["logits"][0]
+        for i, (prediction_score, answer) in enumerate(
+            zip(predictions_scores, answers)
+        ):
+            prediction_output = PredictionOutput(
+                output=answer, output_score=prediction_score
+            )
+            prediction = Prediction(
+                prediction_score=prediction_score, prediction_output=prediction_output
+            )
+
+            if i == model_api_output["labels"][0]:
+                # add subgraphs to the predicted answer
+                prediction_graph = PredictionGraph(
+                    lm_subgraph=model_api_output["lm_subgraph"],
+                    attn_subgraph=model_api_output["attn_subgraph"],
+                )
+                prediction.prediction_graph = prediction_graph
+
+            predictions.append(prediction)
+
+        return cls(predictions=predictions)
 
     @classmethod
     def from_question_answering(
