@@ -149,6 +149,18 @@ class QueryOutput(BaseModel):
             questions = [questions] * len
         return questions
 
+    @staticmethod
+    def get_attribution_by_context_i(
+        attributions: List[Dict[str, List[List[int]]]], context_i
+    ) -> Attributions:
+
+        attribution_keys = attributions[0].keys()
+        context_attributions = {}
+        for k in attribution_keys:
+            context_attributions[k] = attributions[0][k][context_i]
+
+        return Attributions.parse_obj(context_attributions)
+
     @validator("predictions")
     def sort_predictions(
         cls, v: List[Union[Prediction, Dict]]
@@ -207,7 +219,7 @@ class QueryOutput(BaseModel):
     @staticmethod
     def extend_and_sort_attributions_to_scores(
         scores: List, attributions: List, fill_value=None
-    ):
+    ) -> List[List]:
         """extends attributios to same len as `scores and sorts according to `scores`"""
         # sort attributions by logits
         sort_idx = np.argsort(scores)[::-1]
@@ -355,41 +367,28 @@ class QueryOutput(BaseModel):
         # TODO: make this work with the datastore api output to support all
         # prediction_document fields
         predictions: List[Prediction] = []
-        num_docs = len(model_api_output["answers"])
 
-        doc_answer_attributions = model_api_output.get("attributions", None)
-        if not doc_answer_attributions:
-            doc_answer_attributions = [[] for _ in range(num_docs)]
-        else:
-            # some attributions have been returned
-            if len(doc_answer_attributions) == 1 and isinstance(
-                doc_answer_attributions[0], dict
-            ):
-                doc_answer_attributions[0] = [doc_answer_attributions[0]]
-            doc_answer_attributions.extend(
-                [] for _ in range(num_docs - len(doc_answer_attributions))
-            )
-        logger.info("doc_answer_attributions={}".format(doc_answer_attributions))
-        # loop over docs
-        for i, (question, answers, attributions) in enumerate(
-            zip(questions, model_api_output["answers"], doc_answer_attributions)
+        attributions = model_api_output.get("attributions", None)
+        # loop over contexts
+        for i_context, (question, answers) in enumerate(
+            zip(questions, model_api_output["answers"])
         ):
             if isinstance(context, list):
-                context_doc_i = context[i]
-                context_score_i = context_score[i]
+                context_doc_i = context[i_context]
+                context_score_i = context_score[i_context]
             else:
                 context_doc_i = "" if context is None else context
                 context_score_i = 1 if context_score is None else context_score
 
             # get the sorted attributions for the answers from one doc
             scores = [answer["score"] for answer in answers]
-            answer_attributions = cls.extend_and_sort_attributions_to_scores(
-                scores=scores, attributions=attributions
-            )
-            logger.info("answer_attributions={}".format(answer_attributions))
+            top_answer_idx = np.argmax(scores)
             # loop over answers per doc
-            for answer, prediction_score, attributions in zip(
-                answers, scores, answer_attributions
+            for i_answer, (answer, prediction_score) in enumerate(
+                zip(
+                    answers,
+                    scores,
+                )
             ):
                 answer_str = answer["answer"]
                 if not answer_str:
@@ -416,8 +415,10 @@ class QueryOutput(BaseModel):
                     prediction_output=prediction_output,
                     prediction_documents=prediction_documents,
                 )
-                if attributions:
-                    prediction.attributions = attributions
+                if attributions and i_answer == top_answer_idx:
+                    prediction.attributions = cls.get_attribution_by_context_i(
+                        attributions, i_context
+                    )
 
                 predictions.append(prediction)
 
