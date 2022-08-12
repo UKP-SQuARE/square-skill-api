@@ -31,7 +31,7 @@ class AttackKwargsMethod(str, Enum):
     HOT_FLIP = "hotflip"
     INPUT_REDUCTION = "input_reduction"
     SUB_SPAN = "sub_span"
-    TOP_K = "top_k"
+    TOPK_TOKENS = "topk_tokens"
 
 
 class AttackKwargs(BaseModel):
@@ -45,10 +45,7 @@ class AttackKwargs(BaseModel):
         ge=1,
         description="Maximum number of reductions to perform for Input Reduction.",
     )
-    span_length: int = Field(
-        None, ge=1, description="Length of the span to use for Span."
-    )
-    max_topk: int = Field(
+    max_tokens: int = Field(
         None, ge=1, description="Maximum number of top-k to use for TopK."
     )
 
@@ -60,8 +57,8 @@ class AttackKwargs(BaseModel):
         method2parm = {
             AttackKwargsMethod.HOTFLIP: "max_flips",
             AttackKwargsMethod.INPUT_REDUCTION: "max_reductions",
-            AttackKwargsMethod.SUB_SPAN: "span_length",
-            AttackKwargsMethod.TOP_K: "max_topk",
+            AttackKwargsMethod.SUB_SPAN: "max_tokens",
+            AttackKwargsMethod.TOPK_TOKENS: "max_tokens",
         }
         for method, param in method2parm.items():
             if values["method"] == method and values[param] is None:
