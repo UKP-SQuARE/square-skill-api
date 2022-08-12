@@ -53,9 +53,15 @@ class Attributions(BaseModel):
     context_tokens: List[TokenAttribution]
 
 
+class Adversarial(BaseModel):
+    indices: List[int] = Field(None)
+    spans: List[int] = Field(None)
+
+
 class Prediction(BaseModel):
     """A single prediction for a query."""
 
+    question: str = Field(..., description="The question that was asked.")
     prediction_score: float = Field(
         ...,
         description="The overall score assigned to the prediction. Up to the Skill to decide how to calculate",
@@ -80,6 +86,7 @@ class QueryOutput(BaseModel):
         ...,
         description="All predictions for the query. Predictions are sorted by prediction_score (descending)",
     )
+    adversarial: Union[None, Adversarial] = Field(None)
 
     @staticmethod
     def sort_predictions_key(p: Union[Prediction, Dict]) -> Tuple:
@@ -104,6 +111,18 @@ class QueryOutput(BaseModel):
         else:
             raise TypeError(type(p))
         return (answer_found, answer_score, document_score)
+
+    @staticmethod
+    def read_questions(questions, model_api_output, len: int) -> List[str]:
+        """
+        If `questions` is given in the model_api_output, overwrite it. Else processes
+        provided questions.
+        """
+        if "questions" in model_api_output:
+            questions = model_api_output["questions"]
+        elif isinstance(questions, str):
+            questions = [questions] * len
+        return questions
 
     @validator("predictions")
     def sort_predictions(
@@ -177,6 +196,7 @@ class QueryOutput(BaseModel):
     @classmethod
     def from_sequence_classification(
         cls,
+        questions: Union[str, List[str]],
         answers: List[str],
         model_api_output: Dict,
         context: Union[None, str, List[str]] = None,
@@ -189,6 +209,12 @@ class QueryOutput(BaseModel):
             context (Union[None, str, List[str]], optional): Context used to obtain
             model api output. Defaults to None.
         """
+        questions = cls.read_questions(
+            questions,
+            model_api_output,
+            len=len(model_api_output["model_outputs"]["logits"][0]),
+        )
+
         # TODO: make this work with the datastore api output to support all
         # prediction_document fields
         prediction_documents_iter = cls._prediction_documents_iter_from_context(
@@ -202,7 +228,14 @@ class QueryOutput(BaseModel):
             scores=predictions_scores, attributions=all_attributions
         )
 
-        for prediction_score, answer, prediction_documents, attributions in zip_longest(
+        for (
+            question,
+            prediction_score,
+            answer,
+            prediction_documents,
+            attributions,
+        ) in zip_longest(
+            questions,
             predictions_scores,
             answers,
             prediction_documents_iter,
@@ -215,6 +248,7 @@ class QueryOutput(BaseModel):
             )
 
             prediction = Prediction(
+                question=question,
                 prediction_score=prediction_score,
                 prediction_output=prediction_output,
                 prediction_documents=prediction_documents,
@@ -224,11 +258,19 @@ class QueryOutput(BaseModel):
 
             predictions.append(prediction)
 
-        return cls(predictions=predictions)
+        if "adversarial" in model_api_output:
+            predictions = cls(
+                predictions=predictions, adversarial=model_api_output["adversarial"]
+            )
+        else:
+            predictions = cls(predictions=predictions)
+
+        return predictions
 
     @classmethod
     def from_question_answering(
         cls,
+        questions: Union[str, List[str]],
         model_api_output: Dict,
         context: Union[None, str, List[str]] = None,
         context_score: Union[None, float, List[float]] = None,
@@ -242,6 +284,10 @@ class QueryOutput(BaseModel):
             context_score (Union[None, float, List[float]], optional): Context scores
             from datastores.
         """
+        questions = cls.read_questions(
+            questions, model_api_output, len=len(model_api_output["answers"])
+        )
+
         # TODO: make this work with the datastore api output to support all
         # prediction_document fields
         predictions: List[Prediction] = []
@@ -261,8 +307,8 @@ class QueryOutput(BaseModel):
             )
         logger.info("doc_answer_attributions={}".format(doc_answer_attributions))
         # loop over docs
-        for i, (answers, attributions) in enumerate(
-            zip(model_api_output["answers"], doc_answer_attributions)
+        for i, (question, answers, attributions) in enumerate(
+            zip(questions, model_api_output["answers"], doc_answer_attributions)
         ):
             if isinstance(context, list):
                 context_doc_i = context[i]
@@ -301,6 +347,7 @@ class QueryOutput(BaseModel):
                     else []
                 )
                 prediction = Prediction(
+                    question=question,
                     prediction_score=prediction_score,
                     prediction_output=prediction_output,
                     prediction_documents=prediction_documents,
@@ -310,11 +357,19 @@ class QueryOutput(BaseModel):
 
                 predictions.append(prediction)
 
-        return cls(predictions=predictions)
+        if "adversarial" in model_api_output:
+            predictions = cls(
+                predictions=predictions, adversarial=model_api_output["adversarial"]
+            )
+        else:
+            predictions = cls(predictions=predictions)
+
+        return predictions
 
     @classmethod
     def from_generation(
         cls,
+        questions: Union[str, List[str]],
         model_api_output: Dict,
         context: Union[None, str, List[str]] = None,
         context_score: Union[None, float, List[float]] = None,
@@ -328,6 +383,9 @@ class QueryOutput(BaseModel):
             context_score (Union[None, float, List[float]], optional): Context scores
             from datastores.
         """
+        questions = cls.read_questions(
+            questions, model_api_output, len=len(model_api_output["generated_texts"][0])
+        )
 
         predictions: List[Prediction] = []
         for answer, attributions in zip_longest(
