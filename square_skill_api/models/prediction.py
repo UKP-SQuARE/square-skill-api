@@ -147,7 +147,7 @@ class QueryOutput(BaseModel):
         """
         if key in model_api_output:
             value = model_api_output[key]
-        elif isinstance(value, str) and len is not None:
+        if isinstance(value, str):
             value = [value] * len
         return value
 
@@ -253,6 +253,10 @@ class QueryOutput(BaseModel):
             context (Union[None, str, List[str]], optional): Context used to obtain
             model api output. Defaults to None.
         """
+        logger.debug(f"input questions: {questions}")
+        logger.debug(f"input answers: {answers}")
+        logger.debug(f"input context: {context}")
+
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
             key="questions",
