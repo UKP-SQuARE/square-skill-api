@@ -262,7 +262,7 @@ class QueryOutput(BaseModel):
         predictions = []
         predictions_scores = model_api_output["model_outputs"]["logits"][0]
         attributions = model_api_output.get("attributions", None)
-
+        top_answer_idx = np.argmax(predictions_scores)
         for (
             i_answer,
             (question, prediction_score, answer, prediction_documents),
@@ -287,8 +287,17 @@ class QueryOutput(BaseModel):
                 prediction_documents=prediction_documents,
             )
             if attributions:
+                if len(attributions[0]["topk_question_idx"]) == 1:
+                    # attributions only for top_answer
+                    if i_answer == top_answer_idx:
+                        index = 0
+                    else:
+                        continue
+                else:
+                    # attributions for all answers
+                    index = i_answer
                 prediction.attributions = cls.get_attribution_by_index(
-                    attributions, index=i_answer
+                    attributions, index=index
                 )
 
             predictions.append(prediction)
