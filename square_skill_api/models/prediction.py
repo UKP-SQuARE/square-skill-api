@@ -386,6 +386,9 @@ class QueryOutput(BaseModel):
         predictions: List[Prediction] = []
 
         attributions = model_api_output.get("attributions", None)
+        logger.info(f"attributions: {attributions}")
+        logger.info(f"questions: {questions}")
+        logger.info(f"answers: {model_api_output['answers']}")
         # loop over contexts
         for i_context, (question, answers) in enumerate(
             zip(questions, model_api_output["answers"])
@@ -400,6 +403,9 @@ class QueryOutput(BaseModel):
             # get the sorted attributions for the answers from one doc
             scores = [answer["score"] for answer in answers]
             top_answer_idx = np.argmax(scores)
+
+            logger.info(f"answers: {answers}")
+            logger.info(f"prediction_score: {prediction_score}")
             # loop over answers per doc
             for i_answer, (answer, prediction_score) in enumerate(
                 zip(
