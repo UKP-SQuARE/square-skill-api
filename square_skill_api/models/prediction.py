@@ -80,7 +80,6 @@ class Attributions(BaseModel):
 
 class Adversarial(BaseModel):
     indices: List[int] = Field(None)
-    spans: List[int] = Field(None)
 
 
 class Prediction(BaseModel):
