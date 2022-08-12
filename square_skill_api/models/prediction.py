@@ -72,10 +72,10 @@ class TokenAttribution(BaseModel):
 
 
 class Attributions(BaseModel):
-    topk_question_idx: Union[List[int], List[List[int]]]
-    topk_context_idx: Union[List[int], List[List[int]]]
-    question_tokens: Union[List[TokenAttribution], List[List[TokenAttribution]]]
-    context_tokens: Union[List[TokenAttribution], List[List[TokenAttribution]]]
+    topk_question_idx: List[int]
+    topk_context_idx: List[int]
+    question_tokens: List[TokenAttribution]
+    context_tokens: List[TokenAttribution]
 
 
 class Adversarial(BaseModel):
