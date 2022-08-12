@@ -253,9 +253,6 @@ class QueryOutput(BaseModel):
             context (Union[None, str, List[str]], optional): Context used to obtain
             model api output. Defaults to None.
         """
-        logger.debug(f"input questions: {questions}")
-        logger.debug(f"input answers: {answers}")
-        logger.debug(f"input context: {context}")
 
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
@@ -378,6 +375,9 @@ class QueryOutput(BaseModel):
             context_score (Union[None, float, List[float]], optional): Context scores
             from datastores.
         """
+        logger.debug(f"input questions: {questions}")
+        logger.debug(f"input context: {context}")
+
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
             value=questions,
