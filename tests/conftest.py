@@ -202,10 +202,10 @@ def model_api_attribution_output_factory():
     def attribution_factory():
         return [
             {
-                "topk_question_idx": [0],
-                "topk_context_idx": [0],
-                "question": [[1, "hello", 0.1]],
-                "context": [[1, "world", 0.2]],
+                "topk_question_idx": [[0]],
+                "topk_context_idx": [[0]],
+                "question_tokens": [[(1, "hello", 0.1)]],
+                "context_tokens": [[(1, "world", 0.2)]],
             }
         ]
 

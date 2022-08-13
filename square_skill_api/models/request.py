@@ -27,15 +27,15 @@ class ExplainKwargs(BaseModel):
         use_enum_values = True
 
 
-class AdversarialKwargsMethod(str, Enum):
+class AttackKwargsMethod(str, Enum):
     HOT_FLIP = "hotflip"
     INPUT_REDUCTION = "input_reduction"
     SUB_SPAN = "sub_span"
-    TOP_K = "top_k"
+    TOPK_TOKENS = "topk_tokens"
 
 
-class AdversarialKwargs(BaseModel):
-    method: AdversarialKwargsMethod
+class AttackKwargs(BaseModel):
+    method: AttackKwargsMethod
     saliency_method: SaliencyMethod
     max_flips: int = Field(
         None, ge=1, description="Maximum number of flips to perform for HotFlip."
@@ -45,10 +45,7 @@ class AdversarialKwargs(BaseModel):
         ge=1,
         description="Maximum number of reductions to perform for Input Reduction.",
     )
-    span_length: int = Field(
-        None, ge=1, description="Length of the span to use for Span."
-    )
-    max_topk: int = Field(
+    max_tokens: int = Field(
         None, ge=1, description="Maximum number of top-k to use for TopK."
     )
 
@@ -58,10 +55,10 @@ class AdversarialKwargs(BaseModel):
     @root_validator()
     def validate_param_pairs(cls, values):
         method2parm = {
-            AdversarialKwargsMethod.HOTFLIP: "max_flips",
-            AdversarialKwargsMethod.INPUT_REDUCTION: "max_reductions",
-            AdversarialKwargsMethod.SUB_SPAN: "span_length",
-            AdversarialKwargsMethod.TOP_K: "max_topk",
+            AttackKwargsMethod.HOTFLIP: "max_flips",
+            AttackKwargsMethod.INPUT_REDUCTION: "max_reductions",
+            AttackKwargsMethod.SUB_SPAN: "max_tokens",
+            AttackKwargsMethod.TOPK_TOKENS: "max_tokens",
         }
         for method, param in method2parm.items():
             if values["method"] == method and values[param] is None:
@@ -109,6 +106,6 @@ class QueryRequest(BaseModel):
     explain_kwargs: Optional[Dict] = Field(
         {}, description="Optional values for obtaining explainability outputs."
     )
-    adversarial_kwargs: Optional[Dict] = Field(
+    attack_kwargs: Optional[Dict] = Field(
         {}, description="Optional values for obtaining adversarial outputs."
     )
