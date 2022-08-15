@@ -139,7 +139,7 @@ class QueryOutput(BaseModel):
 
     @staticmethod
     def overwrite_from_model_api_output(
-        model_api_output, key: str, value, len: int = None
+        model_api_output, key: str, value, extend_to_len: int = None
     ) -> List[str]:
         """
         If `key` is given in the model_api_output, overwrite value with it.
@@ -148,7 +148,7 @@ class QueryOutput(BaseModel):
         if key in model_api_output and model_api_output[key]:
             value = model_api_output[key]
         if isinstance(value, str):
-            value = [value] * len
+            value = [value] * extend_to_len
         return value
 
     @staticmethod
@@ -256,19 +256,23 @@ class QueryOutput(BaseModel):
             model_api_output,
             key="questions",
             value=questions,
-            len=len(logits),
+            extend_to_len=len(logits),
         )
         context = cls.overwrite_from_model_api_output(
             model_api_output,
             key="context",
             value=context,
-            len=len(logits),
+            extend_to_len=len(logits),
         )
 
         logger.info(f"is_attack={is_attack}")
-        logger.info(f"is_attack={is_categorical}")
+        logger.info(f"is_categorical={is_categorical}")
+        logger.info(f"questions={questions}")
+        logger.info(f"context={context}")
         logger.info(f"attributions={attributions}")
         logger.info(f"logits={logits}")
+
+        predictions = []
         for i, score in enumerate(logits):
             if is_attack:
                 answer_idx = model_api_output["labels"][0]
@@ -295,6 +299,9 @@ class QueryOutput(BaseModel):
                 prediction.attributions = cls.get_attribution_by_index(
                     attributions, index=index
                 )
+
+            predictions.append(prediction)
+
         if is_attack:
             predictions = cls(
                 predictions=predictions, adversarial=model_api_output["adversarial"]
@@ -316,7 +323,7 @@ class QueryOutput(BaseModel):
             model_api_output,
             key="questions",
             value=questions,
-            len=len(model_api_output["model_outputs"]["logits"][0]),
+            extend_to_len=len(model_api_output["model_outputs"]["logits"][0]),
         )
         predictions = []
         predictions_scores = model_api_output["model_outputs"]["logits"][0]
@@ -368,7 +375,7 @@ class QueryOutput(BaseModel):
             model_api_output,
             value=questions,
             key="questions",
-            len=len(model_api_output["answers"]),
+            extend_to_len=len(model_api_output["answers"]),
         )
 
         # TODO: make this work with the datastore api output to support all
@@ -460,7 +467,9 @@ class QueryOutput(BaseModel):
             from datastores.
         """
         questions = cls.overwrite_from_model_api_output(
-            questions, model_api_output, len=len(model_api_output["generated_texts"][0])
+            questions,
+            model_api_output,
+            extend_to_len=len(model_api_output["generated_texts"][0]),
         )
 
         predictions: List[Prediction] = []
