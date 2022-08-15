@@ -253,56 +253,50 @@ class QueryOutput(BaseModel):
             len=len(model_api_output["model_outputs"]["logits"][0]),
         )
 
-        # TODO: make this work with the datastore api output to support all
-        # prediction_document fields
-        prediction_documents_iter = cls._prediction_documents_iter_from_context(
-            iter_len=len(answers), context=context
-        )
-
-        predictions = []
-        predictions_scores = model_api_output["model_outputs"]["logits"][0]
+        is_attack = len(model_api_output["adversarial"]) > 0
+        is_categorical = len(model_api_output["model_outputs"]["logits"]) > 1
         attributions = model_api_output.get("attributions", None)
-        top_answer_idx = np.argmax(predictions_scores)
-        for (
-            i_answer,
-            (question, prediction_score, answer, prediction_documents),
-        ) in enumerate(
-            zip_longest(
-                questions,
-                predictions_scores,
-                answers,
-                prediction_documents_iter,
-                fillvalue=None,
-            )
-        ):
+        if is_categorical:
+            # get the top prediction from the first logits
+            argmax = np.argmax(model_api_output["model_outputs"]["logits"][0])
+            logits = [
+                logits[argmax] for logits in model_api_output["model_outputs"]["logits"]
+            ]
+        else:
+            logits = model_api_output["model_outputs"]["logits"][0]
+        top_answer_idx = np.argmax(logits)
 
-            prediction_output = PredictionOutput(
-                output=answer, output_score=prediction_score
-            )
-
+        logger.info(f"is_attack={is_attack}")
+        logger.info(f"is_attack={is_categorical}")
+        logger.info(f"attributions={attributions}")
+        logger.info(f"logits={logits}")
+        for i, score in enumerate(logits):
+            if is_attack:
+                answer_idx = answers[model_api_output["labels"][0]]
+            else:
+                answer_idx = answers[i]
+            answer = answers[answer_idx]
+            prediction_output = PredictionOutput(output=answer, output_score=score)
             prediction = Prediction(
-                question=question,
-                prediction_score=prediction_score,
+                question=questions[i],
+                prediction_score=score,
                 prediction_output=prediction_output,
-                prediction_documents=prediction_documents,
+                prediction_documents=[PredictionDocument(document=context[i])],
             )
             if attributions:
                 if len(attributions[0]["topk_question_idx"]) == 1:
                     # attributions only for top_answer
-                    if i_answer == top_answer_idx:
+                    if i == top_answer_idx:
                         index = 0
                     else:
                         continue
                 else:
                     # attributions for all answers
-                    index = i_answer
+                    index = i
                 prediction.attributions = cls.get_attribution_by_index(
                     attributions, index=index
                 )
-
-            predictions.append(prediction)
-
-        if "adversarial" in model_api_output:
+        if is_attack:
             predictions = cls(
                 predictions=predictions, adversarial=model_api_output["adversarial"]
             )
@@ -401,8 +395,6 @@ class QueryOutput(BaseModel):
             scores = [answer["score"] for answer in answers]
             top_answer_idx = np.argmax(scores)
 
-            logger.info(f"answers: {answers}")
-            logger.info(f"scores: {scores}")
             # loop over answers per doc
             for i_answer, (answer, prediction_score) in enumerate(
                 zip(
