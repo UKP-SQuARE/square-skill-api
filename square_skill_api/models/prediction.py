@@ -240,31 +240,30 @@ class QueryOutput(BaseModel):
             model api output. Defaults to None.
         """
 
+        is_attack = len(model_api_output["adversarial"]) > 0
+        model_api_logits = model_api_output["model_outputs"]["logits"]
+        is_categorical = len(model_api_logits) > 1
+        attributions = model_api_output.get("attributions", None)
+        if is_categorical:
+            # get the top prediction from the first logits
+            argmax = np.argmax(model_api_logits[0])
+            logits = [logits[argmax] for logits in model_api_logits]
+        else:
+            logits = model_api_logits[0]
+        top_answer_idx = np.argmax(logits)
+
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
             key="questions",
             value=questions,
-            len=len(model_api_output["model_outputs"]["logits"][0]),
+            len=len(logits),
         )
         context = cls.overwrite_from_model_api_output(
             model_api_output,
             key="context",
             value=context,
-            len=len(model_api_output["model_outputs"]["logits"][0]),
+            len=len(logits),
         )
-
-        is_attack = len(model_api_output["adversarial"]) > 0
-        is_categorical = len(model_api_output["model_outputs"]["logits"]) > 1
-        attributions = model_api_output.get("attributions", None)
-        if is_categorical:
-            # get the top prediction from the first logits
-            argmax = np.argmax(model_api_output["model_outputs"]["logits"][0])
-            logits = [
-                logits[argmax] for logits in model_api_output["model_outputs"]["logits"]
-            ]
-        else:
-            logits = model_api_output["model_outputs"]["logits"][0]
-        top_answer_idx = np.argmax(logits)
 
         logger.info(f"is_attack={is_attack}")
         logger.info(f"is_attack={is_categorical}")
