@@ -271,9 +271,9 @@ class QueryOutput(BaseModel):
         logger.info(f"logits={logits}")
         for i, score in enumerate(logits):
             if is_attack:
-                answer_idx = answers[model_api_output["labels"][0]]
+                answer_idx = model_api_output["labels"][0]
             else:
-                answer_idx = answers[i]
+                answer_idx = i
             answer = answers[answer_idx]
             prediction_output = PredictionOutput(output=answer, output_score=score)
             prediction = Prediction(
