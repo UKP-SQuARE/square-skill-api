@@ -222,7 +222,7 @@ class QueryOutput(BaseModel):
         )
         context = cls.overwrite_from_model_api_output(
             model_api_output,
-            key="context",
+            key="contexts",
             value=context,
             extend_to_len=len(logits),
         )
@@ -342,6 +342,13 @@ class QueryOutput(BaseModel):
             extend_to_len=len(model_api_output["answers"]),
         )
 
+        context = cls.overwrite_from_model_api_output(
+            model_api_output,
+            value=context,
+            key="contexts",
+            extend_to_len=len(model_api_output["answers"]),
+        )
+
         # TODO: make this work with the datastore api output to support all
         # prediction_document fields
         predictions: List[Prediction] = []
@@ -349,18 +356,18 @@ class QueryOutput(BaseModel):
         attributions = model_api_output.get("attributions", None)
         logger.info(f"attributions: {attributions}")
         logger.info(f"questions: {questions}")
+        logger.info(f"context: {context}")
         logger.info(f"answers: {model_api_output['answers']}")
         # loop over contexts
-        for i_context, (question, answers) in enumerate(
-            zip(questions, model_api_output["answers"])
+        for i_context, (question, document, answers) in enumerate(
+            zip(questions, context, model_api_output["answers"])
         ):
-            if isinstance(context, list):
-                context_doc_i = context[i_context]
-                context_score_i = context_score[i_context]
+            if isinstance(context_score, list):
+                document_score = context_score[i_context]
+            elif isinstance(context_score, float):
+                document_score = context_score
             else:
-                context_doc_i = "" if context is None else context
-                context_score_i = 1 if context_score is None else context_score
-
+                document_score = 1
             # get the sorted attributions for the answers from one doc
             scores = [answer["score"] for answer in answers]
             top_answer_idx = np.argmax(scores)
@@ -380,17 +387,13 @@ class QueryOutput(BaseModel):
                     output=answer_str, output_score=prediction_score
                 )
                 # NOTE: currently only one document per answer is supported
-                prediction_documents = (
-                    [
-                        PredictionDocument(
-                            document=context_doc_i,
-                            span=[answer["start"], answer["end"]],
-                            document_score=context_score_i,
-                        )
-                    ]
-                    if context_doc_i
-                    else []
-                )
+                prediction_documents = [
+                    PredictionDocument(
+                        document=document,
+                        span=[answer["start"], answer["end"]],
+                        document_score=document_score,
+                    )
+                ]
                 prediction = Prediction(
                     question=question,
                     prediction_score=prediction_score,
