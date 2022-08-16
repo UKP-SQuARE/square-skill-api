@@ -222,7 +222,7 @@ class QueryOutput(BaseModel):
         )
         context = cls.overwrite_from_model_api_output(
             model_api_output,
-            key="context",
+            key="contexts",
             value=context,
             extend_to_len=len(logits),
         )
@@ -345,7 +345,7 @@ class QueryOutput(BaseModel):
         context = cls.overwrite_from_model_api_output(
             model_api_output,
             value=context,
-            key="context",
+            key="contexts",
             extend_to_len=len(model_api_output["answers"]),
         )
 
@@ -356,6 +356,7 @@ class QueryOutput(BaseModel):
         attributions = model_api_output.get("attributions", None)
         logger.info(f"attributions: {attributions}")
         logger.info(f"questions: {questions}")
+        logger.info(f"context: {context}")
         logger.info(f"answers: {model_api_output['answers']}")
         # loop over contexts
         for i_context, (question, document, answers) in enumerate(
