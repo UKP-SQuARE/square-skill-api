@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterable as cIterable
 from itertools import zip_longest
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
@@ -139,7 +140,7 @@ class QueryOutput(BaseModel):
 
     @staticmethod
     def overwrite_from_model_api_output(
-        model_api_output, key: str, value, len: int = None
+        model_api_output, key: str, value, extend_to_len: int = None
     ) -> List[str]:
         """
         If `key` is given in the model_api_output, overwrite value with it.
@@ -147,8 +148,10 @@ class QueryOutput(BaseModel):
         """
         if key in model_api_output and model_api_output[key]:
             value = model_api_output[key]
+        if value is None:
+            value = ""
         if isinstance(value, str):
-            value = [value] * len
+            value = [value] * extend_to_len
         return value
 
     @staticmethod
@@ -182,47 +185,6 @@ class QueryOutput(BaseModel):
 
         return values
 
-    @staticmethod
-    def _prediction_documents_iter_from_context(
-        iter_len: int, context: Union[None, str, List[str]]
-    ) -> Iterable[PredictionDocument]:
-        """Generates an iterable for the context with `iter_len` length.
-
-        Args:
-            iter_len (int): Length of the iterable
-            context (Union[None, str, List[str]]): If `None`, an iterable of empty lists
-             will be generated. If `str`, the iterable will hold the same string for
-             ever item. If `List[str]`, the iterable will loop over the items in the
-             list.
-
-        Raises:
-            ValueError: Raises ValueError, if contex is a list with differnt size than
-            `iter_len`.
-            TypeError: Raises TypeError, if context is not `None`, `str` or `List[str]`.
-
-        Returns:
-            Iterable[PredictionDocument]: An iterable over list of PredictionDocumnets
-        """
-        if context is None:
-            # no context for all answers
-            prediction_documents_iter = ([] for _ in range(iter_len))
-        elif isinstance(context, str):
-            # same context for all answers
-            prediction_documents_iter = (
-                [PredictionDocument(document=context)] for _ in range(iter_len)
-            )
-        elif isinstance(context, list):
-            # different context for all answers
-            if len(context) != iter_len:
-                raise ValueError()
-            prediction_documents_iter = [
-                [PredictionDocument(document=c)] for c in context
-            ]
-        else:
-            raise TypeError(type(context))
-
-        return prediction_documents_iter
-
     @classmethod
     def from_sequence_classification(
         cls,
@@ -240,69 +202,71 @@ class QueryOutput(BaseModel):
             model api output. Defaults to None.
         """
 
+        is_attack = len(model_api_output.get("adversarial", [])) > 0
+        model_api_logits = model_api_output["model_outputs"]["logits"]
+        attributions = model_api_output.get("attributions", None)
+
+        if len(model_api_logits) > 1:
+            # for categorical skills when using attack method logits are 2d
+            logits = model_api_logits
+        else:
+            logits = model_api_logits[0]
+            top_answer_idx = np.argmax(logits)
+            answer = answers[top_answer_idx]
+
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
             key="questions",
             value=questions,
-            len=len(model_api_output["model_outputs"]["logits"][0]),
+            extend_to_len=len(logits),
         )
         context = cls.overwrite_from_model_api_output(
             model_api_output,
             key="context",
             value=context,
-            len=len(model_api_output["model_outputs"]["logits"][0]),
+            extend_to_len=len(logits),
         )
 
-        # TODO: make this work with the datastore api output to support all
-        # prediction_document fields
-        prediction_documents_iter = cls._prediction_documents_iter_from_context(
-            iter_len=len(answers), context=context
-        )
+        logger.info(f"is_attack={is_attack}")
+        logger.info(f"questions={questions}")
+        logger.info(f"context={context}")
+        logger.info(f"attributions={attributions}")
+        logger.info(f"logits={logits}")
+        logger.info(f"answers={answers}")
 
         predictions = []
-        predictions_scores = model_api_output["model_outputs"]["logits"][0]
-        attributions = model_api_output.get("attributions", None)
-        top_answer_idx = np.argmax(predictions_scores)
-        for (
-            i_answer,
-            (question, prediction_score, answer, prediction_documents),
-        ) in enumerate(
-            zip_longest(
-                questions,
-                predictions_scores,
-                answers,
-                prediction_documents_iter,
-                fillvalue=None,
-            )
-        ):
+        for i, answer_score in enumerate(logits):
+            if isinstance(answer_score, cIterable):
+                top_answer_idx = np.argmax(answer_score)
+                answer_score = answer_score[top_answer_idx]
+                answer = answers[top_answer_idx]
 
             prediction_output = PredictionOutput(
-                output=answer, output_score=prediction_score
+                output=answer, output_score=answer_score
             )
-
             prediction = Prediction(
-                question=question,
-                prediction_score=prediction_score,
+                question=questions[i],
+                prediction_score=answer_score,
                 prediction_output=prediction_output,
-                prediction_documents=prediction_documents,
+                prediction_documents=[PredictionDocument(document=context[i])],
             )
             if attributions:
                 if len(attributions[0]["topk_question_idx"]) == 1:
                     # attributions only for top_answer
-                    if i_answer == top_answer_idx:
+                    if i == top_answer_idx:
                         index = 0
                     else:
                         continue
                 else:
                     # attributions for all answers
-                    index = i_answer
+                    index = i
                 prediction.attributions = cls.get_attribution_by_index(
                     attributions, index=index
                 )
 
             predictions.append(prediction)
 
-        if "adversarial" in model_api_output:
+        if is_attack:
             predictions = cls(
                 predictions=predictions, adversarial=model_api_output["adversarial"]
             )
@@ -323,7 +287,7 @@ class QueryOutput(BaseModel):
             model_api_output,
             key="questions",
             value=questions,
-            len=len(model_api_output["model_outputs"]["logits"][0]),
+            extend_to_len=len(model_api_output["model_outputs"]["logits"][0]),
         )
         predictions = []
         predictions_scores = model_api_output["model_outputs"]["logits"][0]
@@ -375,7 +339,7 @@ class QueryOutput(BaseModel):
             model_api_output,
             value=questions,
             key="questions",
-            len=len(model_api_output["answers"]),
+            extend_to_len=len(model_api_output["answers"]),
         )
 
         # TODO: make this work with the datastore api output to support all
@@ -401,8 +365,6 @@ class QueryOutput(BaseModel):
             scores = [answer["score"] for answer in answers]
             top_answer_idx = np.argmax(scores)
 
-            logger.info(f"answers: {answers}")
-            logger.info(f"scores: {scores}")
             # loop over answers per doc
             for i_answer, (answer, prediction_score) in enumerate(
                 zip(
@@ -469,7 +431,9 @@ class QueryOutput(BaseModel):
             from datastores.
         """
         questions = cls.overwrite_from_model_api_output(
-            questions, model_api_output, len=len(model_api_output["generated_texts"][0])
+            questions,
+            model_api_output,
+            extend_to_len=len(model_api_output["generated_texts"][0]),
         )
 
         predictions: List[Prediction] = []

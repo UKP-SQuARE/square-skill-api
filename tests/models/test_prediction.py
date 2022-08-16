@@ -41,8 +41,8 @@ def test_query_output_autosort(answer_scores, document_scores, predictions_facto
 
 @pytest.mark.parametrize(
     "context",
-    [None, "document", ["documentA", "documentB"]],
-    ids=["context=None", "context=str", "context=List[str]"],
+    [None, "document"],
+    ids=["context=None", "context=str"],
 )
 def test_query_output_from_sequence_classification(
     context,
@@ -51,7 +51,6 @@ def test_query_output_from_sequence_classification(
     n = 3
     answers = ["door {i}".format(i=i) for i in range(n)]
     model_api_output = model_api_sequence_classification_ouput_factory(n=n)
-    context = None
     query_output = QueryOutput.from_sequence_classification(
         questions="test question",
         answers=answers,
@@ -60,7 +59,9 @@ def test_query_output_from_sequence_classification(
     )
 
     if context is None:
-        assert all(p.prediction_documents == [] for p in query_output.predictions)
+        assert all(
+            p.prediction_documents[0].document == "" for p in query_output.predictions
+        )
     elif isinstance(context, str):
         assert all(
             p.prediction_documents == [PredictionDocument(document=context)]
