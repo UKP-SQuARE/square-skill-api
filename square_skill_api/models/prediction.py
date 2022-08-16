@@ -207,9 +207,11 @@ class QueryOutput(BaseModel):
         if len(model_api_logits) > 1:
             # for categorical skills when using attack method logits are 2d
             logits = model_api_logits
+            logger.info(f"logits are 2d")
         else:
             logits = model_api_logits[0]
             top_answer_idx = np.argmax(logits)
+            logger.info(f"logits are 1d")
 
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
