@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterable as cIterable
 from itertools import zip_longest
 from typing import Dict, Iterable, List, Optional, Tuple, Union
 
@@ -241,7 +242,7 @@ class QueryOutput(BaseModel):
         """
 
         is_attack = len(model_api_output["adversarial"]) > 0
-        model_api_logits = list(model_api_output["model_outputs"]["logits"])
+        model_api_logits = model_api_output["model_outputs"]["logits"]
         attributions = model_api_output.get("attributions", None)
 
         if len(model_api_logits) > 1:
@@ -273,7 +274,7 @@ class QueryOutput(BaseModel):
         predictions = []
         for i, answer_score in enumerate(logits):
             logger.info(f"type(answer_score)={type(answer_score)}")
-            if isinstance(answer_score, list):
+            if isinstance(answer_score, cIterable):
                 top_answer_idx = np.argmax(answer_score)
                 answer_score = answer_score[top_answer_idx]
 
