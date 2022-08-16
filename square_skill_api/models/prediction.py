@@ -233,6 +233,9 @@ class QueryOutput(BaseModel):
         predictions = []
         for i, answer_score in enumerate(logits):
             logger.info(f"type(answer_score)={type(answer_score)}")
+            logger.info(
+                f"isinstance(answer_score, cIterable)={isinstance(answer_score, cIterable)}"
+            )
             if isinstance(answer_score, cIterable):
                 top_answer_idx = np.argmax(answer_score)
                 answer_score = answer_score[top_answer_idx]
