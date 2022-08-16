@@ -183,47 +183,6 @@ class QueryOutput(BaseModel):
 
         return values
 
-    @staticmethod
-    def _prediction_documents_iter_from_context(
-        iter_len: int, context: Union[None, str, List[str]]
-    ) -> Iterable[PredictionDocument]:
-        """Generates an iterable for the context with `iter_len` length.
-
-        Args:
-            iter_len (int): Length of the iterable
-            context (Union[None, str, List[str]]): If `None`, an iterable of empty lists
-             will be generated. If `str`, the iterable will hold the same string for
-             ever item. If `List[str]`, the iterable will loop over the items in the
-             list.
-
-        Raises:
-            ValueError: Raises ValueError, if contex is a list with differnt size than
-            `iter_len`.
-            TypeError: Raises TypeError, if context is not `None`, `str` or `List[str]`.
-
-        Returns:
-            Iterable[PredictionDocument]: An iterable over list of PredictionDocumnets
-        """
-        if context is None:
-            # no context for all answers
-            prediction_documents_iter = ([] for _ in range(iter_len))
-        elif isinstance(context, str):
-            # same context for all answers
-            prediction_documents_iter = (
-                [PredictionDocument(document=context)] for _ in range(iter_len)
-            )
-        elif isinstance(context, list):
-            # different context for all answers
-            if len(context) != iter_len:
-                raise ValueError()
-            prediction_documents_iter = [
-                [PredictionDocument(document=c)] for c in context
-            ]
-        else:
-            raise TypeError(type(context))
-
-        return prediction_documents_iter
-
     @classmethod
     def from_sequence_classification(
         cls,
