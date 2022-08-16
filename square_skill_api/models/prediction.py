@@ -212,7 +212,6 @@ class QueryOutput(BaseModel):
         else:
             logits = model_api_logits[0]
             top_answer_idx = np.argmax(logits)
-            answer = answers[top_answer_idx]
 
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
@@ -240,6 +239,10 @@ class QueryOutput(BaseModel):
                 top_answer_idx = np.argmax(answer_score)
                 answer_score = answer_score[top_answer_idx]
                 answer = answers[top_answer_idx]
+            elif is_attack:
+                answer = answers[top_answer_idx]
+            else:
+                answer = answers[i]
 
             prediction_output = PredictionOutput(
                 output=answer, output_score=answer_score
