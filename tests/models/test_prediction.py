@@ -144,7 +144,9 @@ def test_query_output_from_question_answering(
         context_score=context_score,
     )
     if context is None:
-        assert all(p.prediction_documents == [] for p in query_output.predictions)
+        assert all(
+            p.prediction_documents[0].document == "" for p in query_output.predictions
+        )
     elif isinstance(context, str):
         # span=[0, 0] is hardcoded in the model_api_question_answering_output_factory
         assert all(
