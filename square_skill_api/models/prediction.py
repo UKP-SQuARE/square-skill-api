@@ -148,6 +148,8 @@ class QueryOutput(BaseModel):
         """
         if key in model_api_output and model_api_output[key]:
             value = model_api_output[key]
+        if value is None:
+            value = ""
         if isinstance(value, str):
             value = [value] * extend_to_len
         return value
@@ -200,18 +202,17 @@ class QueryOutput(BaseModel):
             model api output. Defaults to None.
         """
 
-        is_attack = len(model_api_output["adversarial"]) > 0
+        is_attack = len(model_api_output.get("adversarial", [])) > 0
         model_api_logits = model_api_output["model_outputs"]["logits"]
         attributions = model_api_output.get("attributions", None)
 
         if len(model_api_logits) > 1:
             # for categorical skills when using attack method logits are 2d
             logits = model_api_logits
-            logger.info(f"logits are 2d")
         else:
             logits = model_api_logits[0]
             top_answer_idx = np.argmax(logits)
-            logger.info(f"logits are 1d")
+            answer = answers[top_answer_idx]
 
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
@@ -235,15 +236,10 @@ class QueryOutput(BaseModel):
 
         predictions = []
         for i, answer_score in enumerate(logits):
-            logger.info(f"type(answer_score)={type(answer_score)}")
-            logger.info(
-                f"isinstance(answer_score, cIterable)={isinstance(answer_score, cIterable)}"
-            )
             if isinstance(answer_score, cIterable):
                 top_answer_idx = np.argmax(answer_score)
                 answer_score = answer_score[top_answer_idx]
-
-            answer = answers[top_answer_idx]
+                answer = answers[top_answer_idx]
 
             prediction_output = PredictionOutput(
                 output=answer, output_score=answer_score
