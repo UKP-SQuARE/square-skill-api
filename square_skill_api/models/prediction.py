@@ -242,15 +242,14 @@ class QueryOutput(BaseModel):
 
         is_attack = len(model_api_output["adversarial"]) > 0
         model_api_logits = model_api_output["model_outputs"]["logits"]
-        is_categorical = len(model_api_logits) > 1
         attributions = model_api_output.get("attributions", None)
-        if is_categorical:
-            # get the top prediction from the first logits
-            argmax = np.argmax(model_api_logits[0])
-            logits = [logits[argmax] for logits in model_api_logits]
+
+        if len(model_api_logits) > 1:
+            # for categorical skills when using attack method logits are 2d
+            logits = model_api_logits
         else:
             logits = model_api_logits[0]
-        top_answer_idx = np.argmax(logits)
+            top_answer_idx = np.argmax(logits)
 
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
@@ -266,23 +265,25 @@ class QueryOutput(BaseModel):
         )
 
         logger.info(f"is_attack={is_attack}")
-        logger.info(f"is_categorical={is_categorical}")
         logger.info(f"questions={questions}")
         logger.info(f"context={context}")
         logger.info(f"attributions={attributions}")
         logger.info(f"logits={logits}")
 
         predictions = []
-        for i, score in enumerate(logits):
-            if is_attack:
-                answer_idx = model_api_output["labels"][0]
-            else:
-                answer_idx = i
-            answer = answers[answer_idx]
-            prediction_output = PredictionOutput(output=answer, output_score=score)
+        for i, answer_score in enumerate(logits):
+            if isinstance(answer_score, list):
+                top_answer_idx = np.argmax(answer_score)
+                answer_score = answer_score[top_answer_idx]
+
+            answer = answers[top_answer_idx]
+
+            prediction_output = PredictionOutput(
+                output=answer, output_score=answer_score
+            )
             prediction = Prediction(
                 question=questions[i],
-                prediction_score=score,
+                prediction_score=answer_score,
                 prediction_output=prediction_output,
                 prediction_documents=[PredictionDocument(document=context[i])],
             )
