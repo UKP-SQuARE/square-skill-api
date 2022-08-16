@@ -231,6 +231,7 @@ class QueryOutput(BaseModel):
         logger.info(f"context={context}")
         logger.info(f"attributions={attributions}")
         logger.info(f"logits={logits}")
+        logger.info(f"answers={answers}")
 
         predictions = []
         for i, answer_score in enumerate(logits):
