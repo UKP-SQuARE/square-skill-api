@@ -420,6 +420,56 @@ class QueryOutput(BaseModel):
         return predictions
 
     @classmethod
+    def from_information_retrieval(
+        cls,
+        questions: str,
+        context: Union[None, str, List[str]],
+        context_score: Union[None, float, List[float]],
+    ):
+        """Constructor for QueryOutput from information retrieval of model api.
+
+        Args:
+            questions (Union[str, List[str]]): requested query
+            context (Union[None, str, List[str]]): Context used to obtain model api output.
+            context_score (Union[None, float, List[float]]): Context scores from datastores.
+        """
+
+        if isinstance(questions, str) and isinstance(context, list):
+            questions = [questions] * len(context)
+
+        predictions: List[Prediction] = []
+
+        logger.info(f"questions: {questions}")
+        logger.info(f"context: {context}")
+
+        # loop over contexts, and add each document as the entire prediction
+        for i_context, (question, document) in enumerate(zip(questions, context)):
+            if isinstance(context_score, list):
+                document_score = context_score[i_context]
+            elif isinstance(context_score, float):
+                document_score = context_score
+            else:
+                document_score = 1
+
+            # prediction output is usually the answer from the qa-model
+            # but in this case we're outputting the retrieved document
+            prediction_output = PredictionOutput(
+                output=document, output_score=document_score)
+
+            prediction = Prediction(
+                question=question,
+                prediction_score=document_score,
+                prediction_output=prediction_output,
+            )
+
+            logger.debug(f"prediction: {prediction}")
+            predictions.append(prediction)
+
+        predictions = cls(predictions=predictions)
+
+        return predictions
+
+    @classmethod
     def from_generation(
         cls,
         questions: Union[str, List[str]],
