@@ -338,18 +338,20 @@ class QueryOutput(BaseModel):
         logger.debug(f"input questions: {questions}")
         logger.debug(f"input context: {context}")
 
+        answers = model_api_output["answers"]
+
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
             value=questions,
             key="questions",
-            extend_to_len=len(model_api_output["answers"]),
+            extend_to_len=len(answers),
         )
 
         context = cls.overwrite_from_model_api_output(
             model_api_output,
             value=context,
             key="contexts",
-            extend_to_len=len(model_api_output["answers"]),
+            extend_to_len=len(answers),
         )
 
         # TODO: make this work with the datastore api output to support all
@@ -360,10 +362,10 @@ class QueryOutput(BaseModel):
         logger.info(f"attributions: {attributions}")
         logger.info(f"questions: {questions}")
         logger.info(f"context: {context}")
-        logger.info(f"answers: {model_api_output['answers']}")
+        logger.info(f"answers: {answers}")
         # loop over contexts
         for i_context, (question, document, answers) in enumerate(
-            zip(questions, context, model_api_output["answers"])
+            zip(questions, context, answers)
         ):
             if isinstance(context_score, list):
                 document_score = context_score[i_context]
