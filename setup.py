@@ -1,10 +1,14 @@
 from setuptools import setup, find_packages
 
+__version__ = "0.0.35"
+
 setup(
     name="square_skill_api",
-    version="0.0.27",
+    version=__version__,
+    license="MIT",
     description="",
-    url="www.informatik.tu-darmstadt.de/ukp",
+    url="https://github.com/UKP-SQuARE/square-skill-api",
+    download_url=f"https://github.com/UKP-SQuARE/square-skill-api/archive/refs/tags/v{__version__}.tar.gz",
     author="UKP",
     author_email="baumgaertner@ukp.informatik.tu-darmstadt.de",
     packages=find_packages(
