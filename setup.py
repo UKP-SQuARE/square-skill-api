@@ -19,5 +19,6 @@ setup(
         "fastapi>=0.65.2",
         "pydantic>=1.8.2",
         "numpy>=1.21.3",
+        "square-elk-json-formatter==0.0.3"
     ],
 )
