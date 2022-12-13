@@ -82,7 +82,7 @@ class Attributions(BaseModel):
 class Adversarial(BaseModel):
     indices: List[int] = Field(None)
     
-class PredictionTweac(BaseModel):
+class TweacPrediction(BaseModel):
     skills: List[str] = Field(None, description="The skills ids predicted by the model.")
 
 
@@ -106,10 +106,12 @@ class Prediction(BaseModel):
     attributions: Union[None, Attributions] = Field(
         None, description="Feature attributions for the question and context"
     )
-    prediction_tweac: Union[None, PredictionTweac] = Field(None, description="List of Skill ids.")
+
+class Output(BaseModel):
+    predictions: List
 
 
-class QueryOutput(BaseModel):
+class QueryOutput(Output):
     """The model for output that the skill returns after processing a query."""
 
     predictions: List[Prediction] = Field(
@@ -515,3 +517,7 @@ class QueryOutput(BaseModel):
             predictions.append(prediction)
 
         return cls(predictions=predictions)
+
+
+class TweacOutput(Output):
+    predictions: List[TweacPrediction]
