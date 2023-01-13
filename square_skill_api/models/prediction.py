@@ -105,11 +105,7 @@ class Prediction(BaseModel):
     )
 
 
-class Output(BaseModel):
-    predictions: List
-
-
-class QueryOutput(Output):
+class QueryOutput(BaseModel):
     """The model for output that the skill returns after processing a query."""
 
     predictions: List[Prediction] = Field(
@@ -518,6 +514,32 @@ class QueryOutput(Output):
         return cls(predictions=predictions)
 
 
-class TweacOutput(Output):
-    skill: str = Field(None, description="The skill id predicted by TWEAC.")
-    output: Output = Field(None, description="The output of the skill.")
+class TweacOutput(QueryOutput):
+    skill_id: str = Field(None, description="The skill id predicted by TWEAC.")
+
+    @classmethod
+    def from_sequence_classification(cls, skill_id: str = None, *args, **kwargs):
+        cls.skill_id = skill_id
+        return super().from_sequence_classification(*args, **kwargs)
+
+    @classmethod
+    def from_sequence_classification_with_graph(
+        cls, skill_id: str = None, *args, **kwargs
+    ):
+        cls.skill_id = skill_id
+        return super().from_sequence_classification_with_graph(*args, **kwargs)
+
+    @classmethod
+    def from_question_answering(cls, skill_id: str = None, *args, **kwargs):
+        cls.skill_id = skill_id
+        return super().from_question_answering(*args, **kwargs)
+
+    @classmethod
+    def from_information_retrieval(cls, skill_id: str = None, *args, **kwargs):
+        cls.skill_id = skill_id
+        return super().from_information_retrieval(*args, **kwargs)
+
+    @classmethod
+    def from_generation(cls, skill_id: str = None, *args, **kwargs):
+        cls.skill_id = skill_id
+        return super().from_generation(*args, **kwargs)
