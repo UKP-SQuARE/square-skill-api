@@ -517,29 +517,3 @@ class QueryOutput(BaseModel):
 class TweacOutput(QueryOutput):
     skill_id: str = Field(None, description="The skill id predicted by TWEAC.")
 
-    @classmethod
-    def from_sequence_classification(cls, skill_id: str = None, *args, **kwargs):
-        cls.skill_id = skill_id
-        return super().from_sequence_classification(*args, **kwargs)
-
-    @classmethod
-    def from_sequence_classification_with_graph(
-        cls, skill_id: str = None, *args, **kwargs
-    ):
-        cls.skill_id = skill_id
-        return super().from_sequence_classification_with_graph(*args, **kwargs)
-
-    @classmethod
-    def from_question_answering(cls, skill_id: str = None, *args, **kwargs):
-        cls.skill_id = skill_id
-        return super().from_question_answering(*args, **kwargs)
-
-    @classmethod
-    def from_information_retrieval(cls, skill_id: str = None, *args, **kwargs):
-        cls.skill_id = skill_id
-        return super().from_information_retrieval(*args, **kwargs)
-
-    @classmethod
-    def from_generation(cls, skill_id: str = None, *args, **kwargs):
-        cls.skill_id = skill_id
-        return super().from_generation(*args, **kwargs)
