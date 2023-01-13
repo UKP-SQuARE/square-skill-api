@@ -81,9 +81,6 @@ class Attributions(BaseModel):
 
 class Adversarial(BaseModel):
     indices: List[int] = Field(None)
-    
-class TweacPrediction(BaseModel):
-    skills: List[str] = Field(None, description="The skills ids predicted by the model.")
 
 
 class Prediction(BaseModel):
@@ -106,6 +103,7 @@ class Prediction(BaseModel):
     attributions: Union[None, Attributions] = Field(
         None, description="Feature attributions for the question and context"
     )
+
 
 class Output(BaseModel):
     predictions: List
@@ -460,7 +458,8 @@ class QueryOutput(Output):
             # prediction output is usually the answer from the qa-model
             # but in this case we're outputting the retrieved document
             prediction_output = PredictionOutput(
-                output=document, output_score=document_score)
+                output=document, output_score=document_score
+            )
 
             prediction = Prediction(
                 question=question,
@@ -520,4 +519,5 @@ class QueryOutput(Output):
 
 
 class TweacOutput(Output):
-    predictions: List[TweacPrediction]
+    skill: str = Field(None, description="The skill id predicted by TWEAC.")
+    output: Output = Field(None, description="The output of the skill.")
