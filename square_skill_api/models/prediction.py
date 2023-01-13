@@ -454,7 +454,8 @@ class QueryOutput(BaseModel):
             # prediction output is usually the answer from the qa-model
             # but in this case we're outputting the retrieved document
             prediction_output = PredictionOutput(
-                output=document, output_score=document_score)
+                output=document, output_score=document_score
+            )
 
             prediction = Prediction(
                 question=question,
@@ -511,3 +512,8 @@ class QueryOutput(BaseModel):
             predictions.append(prediction)
 
         return cls(predictions=predictions)
+
+
+class TweacOutput(QueryOutput):
+    skill_id: str = Field(None, description="The skill id predicted by TWEAC.")
+
