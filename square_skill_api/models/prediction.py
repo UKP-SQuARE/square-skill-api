@@ -516,4 +516,3 @@ class QueryOutput(BaseModel):
 
 class TweacOutput(QueryOutput):
     skill_id: str = Field(None, description="The skill id predicted by TWEAC.")
-
