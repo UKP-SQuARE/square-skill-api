@@ -3,7 +3,6 @@ from typing import List, Union
 
 from pytest import fixture
 
-
 from square_skill_api.models.prediction import (
     Prediction,
     PredictionDocument,

@@ -3,6 +3,7 @@ import itertools
 import pytest
 
 from square_skill_api.models.prediction import (
+    NO_ANSWER_FOUND_STRING,
     PredictionDocument,
     QueryOutput,
     NO_ANSWER_FOUND_STRING,

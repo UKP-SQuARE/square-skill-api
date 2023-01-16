@@ -1,6 +1,6 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-__version__ = "0.0.35"
+__version__ = "0.0.37"
 
 setup(
     name="square_skill_api",
@@ -19,6 +19,6 @@ setup(
         "fastapi>=0.65.2",
         "pydantic>=1.8.2",
         "numpy>=1.21.3",
-        "square-elk-json-formatter==0.0.3"
+        "square-elk-json-formatter==0.0.3",
     ],
 )

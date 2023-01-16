@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, root_validator, validator
 
 
 class SaliencyMethod(str, Enum):
@@ -108,4 +108,11 @@ class QueryRequest(BaseModel):
     )
     attack_kwargs: Optional[Dict] = Field(
         {}, description="Optional values for obtaining adversarial outputs."
+    )
+    model_kwargs: Optional[Dict] = Field(
+        {}, description="Optional values for the model forward pass."
+    )
+    task_kwargs: Optional[Dict] = Field({}, description="Optional values for the task.")
+    preprocessing_kwargs: Optional[Dict] = Field(
+        {}, description="Optional values for preprocessing."
     )

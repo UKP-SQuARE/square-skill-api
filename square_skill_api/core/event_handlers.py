@@ -1,8 +1,7 @@
+import logging
 from typing import Callable
 
 from fastapi import FastAPI
-
-import logging
 
 logger = logging.getLogger(__name__)
 
