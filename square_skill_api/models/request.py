@@ -109,3 +109,10 @@ class QueryRequest(BaseModel):
     attack_kwargs: Optional[Dict] = Field(
         {}, description="Optional values for obtaining adversarial outputs."
     )
+    model_kwargs: Optional[Dict] = Field(
+        {}, description="Optional values for the model forward pass."
+    )
+    task_kwargs: Optional[Dict] = Field({}, description="Optional values for the task.")
+    preprocessing_kwargs: Optional[Dict] = Field(
+        {}, description="Optional values for preprocessing."
+    )
