@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-__version__ = "0.0.36"
+__version__ = "0.0.37"
 
 setup(
     name="square_skill_api",
