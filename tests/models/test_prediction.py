@@ -6,7 +6,7 @@ from square_skill_api.models.prediction import (
     NO_ANSWER_FOUND_STRING,
     PredictionDocument,
     QueryOutput,
-    TweacOutput,
+    NO_ANSWER_FOUND_STRING,
 )
 
 
@@ -174,35 +174,3 @@ def test_query_output_from_question_answering(
             assert query_output.predictions[-1].prediction_documents[
                 0
             ].document_score == min(context_score)
-
-
-@pytest.mark.parametrize(
-    "skill_id, answer_scores,document_scores",
-    (
-        ("skill_id_1", [0.9, 0.8, 0.7], [0.3, 0.4]),
-        ("skill_id_2", [0.7, 0.8, 0.9], [0.4, 0.3]),
-        ("skill_id_3", [0.7, 0.9, 0.8], [None, None, None]),
-    ),
-)
-def test_tweac_output(skill_id, answer_scores, document_scores, predictions_factory):
-
-    predictions = predictions_factory(
-        answer_scores=answer_scores, document_scores=document_scores
-    )
-    query_output = TweacOutput(skill_id=skill_id, predictions=predictions)
-
-    assert query_output.skill_id == skill_id
-
-    assert query_output.predictions[0].prediction_output.output_score == max(
-        answer_scores
-    )
-    assert query_output.predictions[-1].prediction_output.output_score == min(
-        answer_scores
-    )
-    if all(s is not None for s in document_scores):
-        assert query_output.predictions[0].prediction_documents[
-            0
-        ].document_score == max(document_scores)
-        assert query_output.predictions[-1].prediction_documents[
-            0
-        ].document_score == min(document_scores)

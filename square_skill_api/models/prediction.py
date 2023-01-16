@@ -103,6 +103,9 @@ class Prediction(BaseModel):
     attributions: Union[None, Attributions] = Field(
         None, description="Feature attributions for the question and context"
     )
+    skill_id: str = Field(
+        None, description="The id of the skill that made this prediction"
+    )
 
 
 class QueryOutput(BaseModel):
@@ -512,7 +515,3 @@ class QueryOutput(BaseModel):
             predictions.append(prediction)
 
         return cls(predictions=predictions)
-
-
-class TweacOutput(QueryOutput):
-    skill_id: str = Field(None, description="The skill id predicted by TWEAC.")
