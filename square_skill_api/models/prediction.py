@@ -143,7 +143,7 @@ class QueryOutput(BaseModel):
 
     @staticmethod
     def overwrite_from_model_api_output(
-        model_api_output, key: str, value, extend_to_len: int = None
+        model_api_output, key: str, value, extend_to_len: int = 1
     ) -> List[str]:
         """
         If `key` is given in the model_api_output, overwrite value with it.
@@ -478,7 +478,7 @@ class QueryOutput(BaseModel):
         cls,
         questions: Union[str, List[str]],
         model_api_output: Dict,
-        context: Union[None, str, List[str]] = None,
+        context: Union[str, List[str]] = "",
         context_score: Union[None, float, List[float]] = None,
     ):
         """Constructor for QueryOutput from generation of model api.
@@ -490,14 +490,21 @@ class QueryOutput(BaseModel):
             context_score (Union[None, float, List[float]], optional): Context scores
             from datastores.
         """
+        # questions = cls.overwrite_from_model_api_output(
+        #     questions,
+        #     model_api_output,
+        #     extend_to_len=len(model_api_output["generated_texts"][0]),
+        # )
         questions = cls.overwrite_from_model_api_output(
-            questions,
             model_api_output,
-            extend_to_len=len(model_api_output["generated_texts"][0]),
+            value=questions,
+            key="questions",
+            extend_to_len=len(model_api_output["answers"]),
         )
 
         predictions: List[Prediction] = []
-        for answer, attributions in zip_longest(
+        for question, answer, attributions in zip_longest(
+            questions,
             model_api_output["generated_texts"][0],
             model_api_output.get("attributions", []),
             fillvalue=None,
@@ -505,6 +512,7 @@ class QueryOutput(BaseModel):
             # output_score is None for now
             prediction_output = PredictionOutput(output=answer, output_score=1)
             prediction = Prediction(
+                question=question,
                 prediction_score=1,
                 prediction_output=prediction_output,
                 prediction_documents=[PredictionDocument(document=context)],
