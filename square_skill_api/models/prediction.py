@@ -103,6 +103,7 @@ class Prediction(BaseModel):
     attributions: Union[None, Attributions] = Field(
         None, description="Feature attributions for the question and context"
     )
+    bertviz: Union[None, str] = Field(None, description="BertViz visualization data")
     skill_id: str = Field(
         None, description="The id of the skill that made this prediction"
     )
@@ -208,7 +209,7 @@ class QueryOutput(BaseModel):
         is_attack = len(model_api_output.get("adversarial", [])) > 0
         model_api_logits = model_api_output["model_outputs"]["logits"]
         attributions = model_api_output.get("attributions", None)
-
+        bertviz = model_api_output.get("bertviz", None)
         if len(model_api_logits) > 1:
             # for categorical skills when using attack method logits are 2d
             logits = model_api_logits
@@ -233,6 +234,7 @@ class QueryOutput(BaseModel):
         logger.info(f"questions={questions}")
         logger.info(f"context={context}")
         logger.info(f"attributions={attributions}")
+        logger.info(f"bertviz: {bertviz[:100]} ...")
         logger.info(f"logits={logits}")
         logger.info(f"answers={answers}")
 
@@ -269,7 +271,8 @@ class QueryOutput(BaseModel):
                 prediction.attributions = cls.get_attribution_by_index(
                     attributions, index=index
                 )
-
+            if bertviz and len(bertviz) < i_answer:
+                prediction.bertviz = bertviz[i_context]
             predictions.append(prediction)
 
         if is_attack:
@@ -360,7 +363,9 @@ class QueryOutput(BaseModel):
         predictions: List[Prediction] = []
 
         attributions = model_api_output.get("attributions", None)
+        bertviz = model_api_output.get("bertviz", None)
         logger.info(f"attributions: {attributions}")
+        logger.info(f"bertviz: {bertviz[:100]} ...")
         logger.info(f"questions: {questions}")
         logger.info(f"context: {context}")
         logger.info(f"answers: {model_api_output['answers']}")
@@ -410,6 +415,8 @@ class QueryOutput(BaseModel):
                     prediction.attributions = cls.get_attribution_by_index(
                         attributions, index=i_context
                     )
+                if bertviz and len(bertviz) < i_answer:
+                    prediction.bertviz = bertviz[i_context]
                 logger.debug(f"prediction: {prediction}")
                 predictions.append(prediction)
 
