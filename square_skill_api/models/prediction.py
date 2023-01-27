@@ -234,7 +234,8 @@ class QueryOutput(BaseModel):
         logger.info(f"questions={questions}")
         logger.info(f"context={context}")
         logger.info(f"attributions={attributions}")
-        logger.info(f"bertviz: {bertviz[:100]} ...")
+        if bertviz:
+            logger.info(f"bertviz: {bertviz[:100]} ...")
         logger.info(f"logits={logits}")
         logger.info(f"answers={answers}")
 
@@ -271,8 +272,8 @@ class QueryOutput(BaseModel):
                 prediction.attributions = cls.get_attribution_by_index(
                     attributions, index=index
                 )
-            if bertviz and len(bertviz) < i_answer:
-                prediction.bertviz = bertviz[i_context]
+            if bertviz and len(bertviz) < i:
+                prediction.bertviz = bertviz[i]
             predictions.append(prediction)
 
         if is_attack:
@@ -365,7 +366,8 @@ class QueryOutput(BaseModel):
         attributions = model_api_output.get("attributions", None)
         bertviz = model_api_output.get("bertviz", None)
         logger.info(f"attributions: {attributions}")
-        logger.info(f"bertviz: {bertviz[:100]} ...")
+        if bertviz:
+            logger.info(f"bertviz: {bertviz[:100]} ...")
         logger.info(f"questions: {questions}")
         logger.info(f"context: {context}")
         logger.info(f"answers: {model_api_output['answers']}")
