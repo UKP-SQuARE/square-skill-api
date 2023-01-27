@@ -10,6 +10,7 @@ class SaliencyMethod(str, Enum):
     SMOOTH_GRADS = "smooth_grads"
     ATTENTION = "attention"
     SCALED_ATTENTION = "scaled_attention"
+    BERT_VIZ = "bertviz"
 
 
 class ExplainKwargsMode(str, Enum):
