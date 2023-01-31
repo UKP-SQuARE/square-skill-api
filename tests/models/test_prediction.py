@@ -75,6 +75,18 @@ def test_query_output_from_sequence_classification(
         )
 
 
+def test_query_output_from_question_answering_with_bertviz(
+    model_api_sequence_classification_with_bertviz_ouput_factory,
+):
+    n = 1
+    answers = ["door {i}".format(i=i) for i in range(n)]
+    model_api_output = model_api_sequence_classification_with_bertviz_ouput_factory(n=n)
+    query_output = QueryOutput.from_question_answering(
+        questions="test question", answers=answers, model_api_output=model_api_output
+    )
+    assert query_output.predictions[0].bertviz == ["<html>foo</html>"]
+
+
 def test_query_output_from_question_answering_with_graph(
     model_api_sequence_classification_with_graph_ouput_factory,
 ):
