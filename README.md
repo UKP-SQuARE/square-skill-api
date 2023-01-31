@@ -43,3 +43,6 @@ curl -X POST http://localhost:8000/query \
     -d '{ "query": "string"}'
 # {"predictions":[{"prediction_score":1.0,"prediction_output":{"output":"42","output_score":1.0},"prediction_documents":[]}]}
 ```
+
+# How to Contribute
+Create a PR with your changes and do create a test to check that your changes work. You can find the tests in `.test` folder. You can run them by `python -m pytest` in the root folder of this project.
