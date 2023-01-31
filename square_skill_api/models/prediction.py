@@ -417,8 +417,6 @@ class QueryOutput(BaseModel):
                     prediction.attributions = cls.get_attribution_by_index(
                         attributions, index=i_context
                     )
-                if bertviz and len(bertviz) < i_answer:
-                    prediction.bertviz = bertviz[i_context]
                 logger.debug(f"prediction: {prediction}")
                 predictions.append(prediction)
 
@@ -428,6 +426,9 @@ class QueryOutput(BaseModel):
             )
         else:
             predictions = cls(predictions=predictions)
+        # add bertviz to the first prediction (bertviz is the same for all predictions)
+        if bertviz:
+            predictions.predictions[0].bertviz = bertviz[0]
 
         return predictions
 

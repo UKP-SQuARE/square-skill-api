@@ -174,3 +174,35 @@ def test_query_output_from_question_answering(
             assert query_output.predictions[-1].prediction_documents[
                 0
             ].document_score == min(context_score)
+
+
+@pytest.mark.parametrize(
+    "context,context_score",
+    [
+        (None, None),
+        ("document", 0.9),
+        ("document", None),
+        (["documentA", "documentB"], [0.7, 0.3]),
+    ],
+    ids=[
+        "context=None",
+        "context=str",
+        "context=str,score=None",
+        "context=List[str]",
+    ],
+)
+def test_query_output_from_question_answering_with_bertviz(
+    context,
+    context_score,
+    model_api_sequence_classification_with_bertviz_ouput_factory,
+):
+    model_api_output = model_api_sequence_classification_with_bertviz_ouput_factory(
+        n_docs=len(context) if isinstance(context, list) else 1, n_answers=1
+    )
+    query_output = QueryOutput.from_question_answering(
+        questions="test question",
+        model_api_output=model_api_output,
+        context=context,
+        context_score=context_score,
+    )
+    assert query_output.predictions[0].bertviz == "<html>foo</html>"

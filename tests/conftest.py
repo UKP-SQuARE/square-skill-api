@@ -197,6 +197,39 @@ def model_api_question_answering_output_factory():
 
 
 @fixture
+def model_api_sequence_classification_with_bertviz_ouput_factory():
+    def model_api_question_answering_ouput(
+        n_docs: int, n_answers: int, answer: str = None
+    ):
+        return {
+            "answers": [
+                [
+                    {
+                        "score": 1,
+                        "start": 0,
+                        "end": 0,
+                        "answer": "answer {answer_i} for doc {doc_i}".format(
+                            answer_i=str(answer_i), doc_i=str(doc_i)
+                        )
+                        if answer is None
+                        else answer,
+                    }
+                    for answer_i in range(n_answers)
+                ]
+                for doc_i in range(n_docs)
+            ],
+            "model_outputs": {
+                "start_logits": "something encoded",
+                "end_logits": "something encoded",
+            },
+            "model_output_is_encoded": True,
+            "bertviz": ["<html>foo</html>"],
+        }
+
+    return model_api_question_answering_ouput
+
+
+@fixture
 def model_api_attribution_output_factory():
     def attribution_factory():
         return [
