@@ -205,7 +205,7 @@ def model_api_sequence_classification_with_bertviz_ouput_factory():
             "answers": [
                 [
                     {
-                        "score": answer_i / sum(range(n_answers)),
+                        "score": 1,
                         "start": 0,
                         "end": 0,
                         "answer": "answer {answer_i} for doc {doc_i}".format(
