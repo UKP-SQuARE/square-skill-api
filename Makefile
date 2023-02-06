@@ -10,8 +10,10 @@ install-dev:
 	pre-commit install
 
 format:
-	black .
-	isort --profile black .
+	black square_skill_api
+	black tests
+	isort --profile black square_skill_api
+	isort --profile black tests
 
 # COLORS
 GREEN  := $(shell tput -Txterm setaf 2)
