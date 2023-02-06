@@ -264,11 +264,11 @@ def model_api_generation_output_factory():
                     np.random.randint(0, 100, (num_sequences, sequence_length))
                     for _ in range(batch_size)
                 ],
-                "model_output_is_encoded": True,
-                "generated_texts": [
-                    ["hello world"] * num_sequences for _ in range(batch_size)
-                ],
-            }
+            },
+            "model_output_is_encoded": True,
+            "generated_texts": [
+                ["hello world"] * num_sequences for _ in range(batch_size)
+            ],
         }
 
     return model_api_generation_output_factory
