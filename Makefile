@@ -15,6 +15,8 @@ format:
 	isort --profile black square_skill_api
 	isort --profile black tests
 
+test:
+	python -m pytest --cov=square_skill_api --cov-report=term-missing --cov-report=html
 # COLORS
 GREEN  := $(shell tput -Txterm setaf 2)
 YELLOW := $(shell tput -Txterm setaf 3)
