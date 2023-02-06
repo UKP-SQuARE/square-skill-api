@@ -1,8 +1,9 @@
-.DS_Store
 __pycache__
+.coverage
+.DS_Store
+.pytest_cache
 .venv
 .vscode
-.pytest_cache
+*.egg-info
 build
 dist
-*.egg-info
