@@ -1,6 +1,7 @@
 import random
 from typing import List, Union
 
+import numpy as np
 from pytest import fixture
 
 from square_skill_api.models.prediction import (
@@ -242,3 +243,32 @@ def model_api_attribution_output_factory():
         ]
 
     return attribution_factory
+
+
+@fixture
+def model_api_generation_output_factory():
+    def model_api_generation_output_factory(
+        batch_size: int = 1, num_sequences: int = 2, sequence_length: int = 5
+    ):
+        return {
+            "model_outputs": {
+                "sequences": [
+                    np.random.randint(0, 100, (num_sequences, sequence_length))
+                    for _ in range(batch_size)
+                ],
+                "sequences_scores": [
+                    np.random.random(size=(num_sequences,)) for _ in range(batch_size)
+                ],
+                "scores": [],
+                "beam_indices": [
+                    np.random.randint(0, 100, (num_sequences, sequence_length))
+                    for _ in range(batch_size)
+                ],
+                "model_output_is_encoded": True,
+                "generated_texts": [
+                    ["hello world"] * num_sequences for _ in range(batch_size)
+                ],
+            }
+        }
+
+    return model_api_generation_output_factory

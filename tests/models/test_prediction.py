@@ -203,3 +203,12 @@ def test_query_output_from_question_answering_with_bertviz(
         context_score=context_score,
     )
     assert query_output.predictions[0].bertviz == "<html>foo</html>"
+
+
+def test_from_generation(model_api_generation_output_factory):
+    model_api_output = model_api_generation_output_factory()
+    query_output = QueryOutput.from_generation(
+        questions="test question",
+        context="test context",
+        model_api_output=model_api_output,
+    )

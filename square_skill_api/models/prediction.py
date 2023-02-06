@@ -503,28 +503,34 @@ class QueryOutput(BaseModel):
             context_score (Union[None, float, List[float]], optional): Context scores
             from datastores.
         """
+        # TODO: add support for batched outputs
+        generated_texts = model_api_output["model_outputs"]["generated_texts"][0]
+        sequences_scores = model_api_output["model_outputs"]["sequences_scores"][0]
+        sequences_scores = softmax(sequences_scores)
         questions = cls.overwrite_from_model_api_output(
-            questions,
-            model_api_output,
-            extend_to_len=len(model_api_output["generated_texts"][0]),
+            key="",
+            value=questions,
+            model_api_output=model_api_output,
+            extend_to_len=len(generated_texts),
+        )
+        context = cls.overwrite_from_model_api_output(
+            key="",
+            value=context,
+            model_api_output=model_api_output,
+            extend_to_len=len(generated_texts),
         )
 
         predictions: List[Prediction] = []
-        for answer, attributions in zip_longest(
-            model_api_output["generated_texts"][0],
-            model_api_output.get("attributions", []),
-            fillvalue=None,
+        for question, context, generation, score in zip(
+            questions, context, generated_texts, sequences_scores
         ):
-            # output_score is None for now
-            prediction_output = PredictionOutput(output=answer, output_score=1)
+            prediction_output = PredictionOutput(output=generation, output_score=score)
             prediction = Prediction(
-                prediction_score=1,
+                question=question,
+                prediction_score=score,
                 prediction_output=prediction_output,
                 prediction_documents=[PredictionDocument(document=context)],
             )
-            if attributions:
-                prediction.attributions = attributions
-
             predictions.append(prediction)
 
         return cls(predictions=predictions)
