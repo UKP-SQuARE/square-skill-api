@@ -162,7 +162,6 @@ class QueryOutput(BaseModel):
     def get_attribution_by_index(
         attributions: List[Dict[str, List[List[int]]]], index
     ) -> Attributions:
-
         attribution_keys = attributions[0].keys()
         context_attributions = {}
         for k in attribution_keys:
@@ -292,7 +291,6 @@ class QueryOutput(BaseModel):
         answers: List[str],
         model_api_output: Dict,
     ):
-
         questions = cls.overwrite_from_model_api_output(
             model_api_output,
             key="questions",

@@ -6,7 +6,6 @@ from square_skill_api.models.prediction import (
     NO_ANSWER_FOUND_STRING,
     PredictionDocument,
     QueryOutput,
-    NO_ANSWER_FOUND_STRING,
 )
 
 
@@ -19,7 +18,6 @@ from square_skill_api.models.prediction import (
     ),
 )
 def test_query_output_autosort(answer_scores, document_scores, predictions_factory):
-
     predictions = predictions_factory(
         answer_scores=answer_scores, document_scores=document_scores
     )
@@ -90,7 +88,6 @@ def test_query_output_with_attributions_sorting(
     model_api_sequence_classification_ouput_factory,
     model_api_attribution_output_factory,
 ):
-
     n = 3
     answers = ["door {i}".format(i=i) for i in range(n)]
     logits = [0.1, 0.7, 0.2]
