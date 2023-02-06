@@ -11,6 +11,11 @@ logger = logging.getLogger(__name__)
 NO_ANSWER_FOUND_STRING = "No answer found."
 
 
+def softmax(x):
+    e_x = np.exp(x - np.max(x))
+    return e_x / e_x.sum(axis=0)
+
+
 class PredictionOutput(BaseModel):
     """Holds the output (e.g. an answer) and the score of that output."""
 
