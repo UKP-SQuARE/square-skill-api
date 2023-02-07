@@ -505,8 +505,12 @@ class QueryOutput(BaseModel):
         """
         # TODO: add support for batched outputs
         generated_texts = model_api_output["generated_texts"][0]
-        sequences_scores = model_api_output["model_outputs"]["sequences_scores"][0]
-        sequences_scores = softmax(sequences_scores)
+        if "sequences_scores" in model_api_output["model_outputs"]:
+            sequences_scores = model_api_output["model_outputs"]["sequences_scores"][0]
+            sequences_scores = softmax(sequences_scores)
+        else:
+            sequences_scores = [1.0]*len(generated_texts)
+            
         questions = cls.overwrite_from_model_api_output(
             key="",
             value=questions,
