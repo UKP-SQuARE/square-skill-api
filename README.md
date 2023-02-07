@@ -4,7 +4,7 @@ This package is used for providing a unified API for all skills and facilitating
 ## Installation
 To install the latest stable version run:
 ```bash
-pip square-skill-api
+pip install square-skill-api
 ```
 To install from the master branch:
 ```bash
