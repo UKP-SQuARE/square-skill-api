@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union, List
 
 from pydantic import BaseModel, Field, root_validator, validator
 
@@ -94,7 +94,7 @@ class AttackKwargs(BaseModel):
 class QueryRequest(BaseModel):
     """The model for a query request that the skill receives."""
 
-    query: str = Field(
+    query: Union[str, List[str]] = Field(
         ..., description="The input to the model that is entered by the user"
     )
     skill_args: Dict[str, Any] = Field(
