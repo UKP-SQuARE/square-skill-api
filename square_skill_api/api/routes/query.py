@@ -23,10 +23,10 @@ def predict():
     response_model=QueryOutput,
     name="Skill Query",
 )
-async def query(query: QueryRequest, predict_fn=Depends(predict)) -> QueryOutput:
+def query(query: QueryRequest, predict_fn=Depends(predict)) -> QueryOutput:
     """Query a skill by providing an input (e.g. question and optional context) and
     receiving a prediction (e.g. an answer to a question)."""
     logger.info(f"Query: {query.dict()}")
-    prediction = await predict_fn(query)
+    prediction = predict_fn(query)
 
     return prediction
