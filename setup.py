@@ -17,7 +17,7 @@ setup(
     install_requires=[
         "uvicorn>=0.15.0",
         "fastapi>=0.65.2",
-        "pydantic>=1.8.2",
+        "pydantic<2.0",
         "numpy>=1.21.3",
         "square-elk-json-formatter==0.0.3",
     ],
